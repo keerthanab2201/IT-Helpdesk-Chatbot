@@ -12,3 +12,29 @@ conda activate chatbot
 pip install -r requirements.txt
 ```
 
+### step 3- Create a .env file in the root directory and add your Pinecone & OpenAI credentials as follows:
+```ini
+PINECONE_API_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+OPENAI_API_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+
+```bash
+### step 4 - Run the following command to store embeddings to Pinecone
+python store_index.py
+```
+```bash
+### finally run the following command
+python app.py
+```
+
+Now,
+```bash
+open up localhost:xxxx
+```
+
+### Techstack Used:
+- Python
+- LangChain
+- Flask
+- GPT
+- Pinecone
