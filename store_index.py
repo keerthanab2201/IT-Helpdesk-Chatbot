@@ -14,19 +14,19 @@ extracted_data= load_pdf_file(data='data/')
 text_chunks= text_split(extracted_data)
 embeddings= download_hugging_face_embeddings()
 
-pc = Pinecone(api_key=PINECONE_API_KEY)
-index_name= "testbot"
+pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
-# create pinecone index 
-pc.create_index(
-    name= index_name,
-    dimension= 384,
-    metric= "cosine",
-    spec= ServerlessSpec(
-        cloud="aws",
-        region="us-east-1",
+# Check if index exists, if not create it
+if "my_index" not in pc.list_indexes().names():
+    pc.create_index(
+        name="my_index",
+        dimension=1536,  # Must match your embedding model's dimension
+        metric="cosine",
+        spec=ServerlessSpec(
+            cloud="aws",
+            region="us-west-2"
+        )
     )
-)
 
 #embed each chunk and upsert the embeddings into your Pinecone index
 docsearch= PineconeVectorStore.from_documents(

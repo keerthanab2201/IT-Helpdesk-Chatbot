@@ -1,5 +1,5 @@
 langchain[all]
-sentence-transformers==2.2.2
+sentence-transformers==5.0.0
 flask
 pypdf
 python-dotenv

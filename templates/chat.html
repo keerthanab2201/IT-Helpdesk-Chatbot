@@ -7,12 +7,34 @@
 
   <!-- Bootstrap & jQuery CDN -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
   
   <!-- Font Awesome & Custom CSS -->
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+
+  <style>
+    .msg_card_body {
+      overflow-y: auto;
+      height: 400px;
+      padding: 15px;
+    }
+    .msg_container {
+      margin-bottom: 15px;
+    }
+    .user_img_msg {
+      height: 40px;
+      width: 40px;
+      border: 1.5px solid #f5f6fa;
+    }
+    .msg_time {
+      display: block;
+      font-size: 10px;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+  </style>
 </head>
 
 <body>
@@ -35,14 +57,17 @@
           </div>
 
           <div id="messageFormeight" class="card-body msg_card_body">
-            <!-- Messages will be appended here -->
+            <!-- Messages will appear here -->
           </div>
 
           <div class="card-footer">
             <form id="messageArea" class="input-group">
-              <input type="text" id="text" name="msg" placeholder="Type your message..." class="form-control type_msg" autocomplete="off">
+              <input type="text" id="text" name="msg" placeholder="Type your message..." 
+                     class="form-control type_msg" autocomplete="off" required>
               <div class="input-group-append">
-                <button type="submit" id="send" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></button>
+                <button type="submit" id="send" class="input-group-text send_btn">
+                  <i class="fas fa-location-arrow"></i>
+                </button>
               </div>
             </form>
           </div>
@@ -53,43 +78,100 @@
 
   <script>
     $(document).ready(function () {
+      // Scroll to bottom of chat on load
+      $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+      
       $("#messageArea").on("submit", function (event) {
+        event.preventDefault();
+        
         const date = new Date();
         const hour = date.getHours();
         const minute = date.getMinutes();
         const str_time = hour + ":" + (minute < 10 ? "0" + minute : minute);
-        const rawText = $("#text").val();
+        const rawText = $("#text").val().trim();
+        
+        if (!rawText) return;
 
+        // Add user message to chat
         const userHtml = `
           <div class="d-flex justify-content-end mb-4">
-            <div class="msg_cotainer_send">${rawText}<span class="msg_time_send">${str_time}</span></div>
+            <div class="msg_cotainer_send">
+              ${rawText}
+              <span class="msg_time_send">${str_time}</span>
+            </div>
             <div class="img_cont_msg">
               <img src="https://cdn.vectorstock.com/i/1000v/26/00/man-working-on-computer-icon-vector-15262600.jpg"
                    class="rounded-circle user_img_msg">
             </div>
           </div>`;
-
-        $("#text").val("");
+        
         $("#messageFormeight").append(userHtml);
-
+        $("#text").val("");
+        $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+        
+        // Send to backend
         $.ajax({
-          data: { msg: rawText },
-          type: "POST",
           url: "/get",
-        }).done(function (data) {
+          type: "POST",
+          data: { msg: rawText },
+          beforeSend: function() {
+            // Show typing indicator
+            $("#messageFormeight").append(`
+              <div class="d-flex justify-content-start mb-4">
+                <div class="img_cont_msg">
+                  <img src="https://cdn.vectorstock.com/i/1000v/26/00/man-working-on-computer-icon-vector-15262600.jpg"
+                       class="rounded-circle user_img_msg">
+                </div>
+                <div class="msg_cotainer">
+                  <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+              </div>
+            `);
+          }
+        })
+        .done(function(data) {
+          // Remove typing indicator
+          $(".typing-dots").parent().parent().remove();
+          
+          // Add bot response
           const botHtml = `
             <div class="d-flex justify-content-start mb-4">
               <div class="img_cont_msg">
                 <img src="https://cdn.vectorstock.com/i/1000v/26/00/man-working-on-computer-icon-vector-15262600.jpg"
                      class="rounded-circle user_img_msg">
               </div>
-              <div class="msg_cotainer">${data}<span class="msg_time">${str_time}</span></div>
+              <div class="msg_cotainer">
+                ${data}
+                <span class="msg_time">${str_time}</span>
+              </div>
             </div>`;
-
+          
           $("#messageFormeight").append(botHtml);
+          $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+        })
+        .fail(function(xhr, status, error) {
+          console.error("Error:", error);
+          $(".typing-dots").parent().parent().remove();
+          
+          const errorHtml = `
+            <div class="d-flex justify-content-start mb-4">
+              <div class="img_cont_msg">
+                <img src="https://cdn.vectorstock.com/i/1000v/26/00/man-working-on-computer-icon-vector-15262600.jpg"
+                     class="rounded-circle user_img_msg">
+              </div>
+              <div class="msg_cotainer">
+                Sorry, I encountered an error. Please try again.
+                <span class="msg_time">${str_time}</span>
+              </div>
+            </div>`;
+          
+          $("#messageFormeight").append(errorHtml);
+          $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
         });
-
-        event.preventDefault();
       });
     });
   </script>
