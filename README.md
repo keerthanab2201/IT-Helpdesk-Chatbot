@@ -29,12 +29,11 @@ python app.py
 
 Now,
 ```bash
-open up localhost:xxxx
+open up localhost:5000
 ```
 
 ### Techstack Used:
 - Python
 - LangChain
 - Flask
-- GPT
 - Pinecone
