@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 from dotenv import load_dotenv
 import os
 import requests
+import markdown
 from pinecone import Pinecone, ServerlessSpec
 from sentence_transformers import SentenceTransformer
 
@@ -69,13 +70,13 @@ def get_bot_response():
 
         # Prepare OpenRouter chat payload
         payload = {
-            "model": "openrouter/cypher-alpha:free",  # ✅ correct model name
+            "model": "qwen/qwen3-30b-a3b:free",  # ✅ correct model name
             "messages": [
                 {"role": "system", "content": f"You are an IT helpdesk assistant. Use this context if relevant:\n{context}"},
                 {"role": "user", "content": user_message}
             ],
             "temperature": 0.7,
-            "max_tokens": 500
+            "max_tokens": 1000
         }
 
         print("Payload:", payload)
@@ -94,7 +95,10 @@ def get_bot_response():
         )
 
         response.raise_for_status()
-        return response.json()["choices"][0]["message"]["content"]
+        raw_markdown = response.json()["choices"][0]["message"]["content"]
+        html_response = markdown.markdown(raw_markdown)
+        return html_response
+
 
     except requests.exceptions.RequestException as e:
         print(f"API Error: {e}")
