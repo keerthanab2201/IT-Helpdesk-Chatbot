@@ -26,7 +26,13 @@
     .user_img_msg {
       height: 40px;
       width: 40px;
-      border: 1.5px solid #f5f6fa;
+    }
+    .bot_img_msg {
+      height: 40px;
+      width: 40px;
+      background-color: #2c2f33;
+      padding: 5px;
+      border-radius: 50%;
     }
     .msg_time {
       display: block;
@@ -45,8 +51,8 @@
           <div class="card-header msg_head">
             <div class="d-flex bd-highlight">
               <div class="img_cont">
-                <img src="https://cdn.vectorstock.com/i/1000v/26/00/man-working-on-computer-icon-vector-15262600.jpg"
-                     class="rounded-circle user_img">
+                <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
+                     class="rounded-circle user_img" style="background-color: #2c2f33; padding: 5px;">
                 <span class="online_icon"></span>
               </div>
               <div class="user_info">
@@ -92,7 +98,7 @@
         
         if (!rawText) return;
 
-        // Add user message to chat
+        // Add user message to chat (keeping original user icon)
         const userHtml = `
           <div class="d-flex justify-content-end mb-4">
             <div class="msg_cotainer_send">
@@ -115,12 +121,12 @@
           type: "POST",
           data: { msg: rawText },
           beforeSend: function() {
-            // Show typing indicator
+            // Show typing indicator with robot icon
             $("#messageFormeight").append(`
               <div class="d-flex justify-content-start mb-4">
                 <div class="img_cont_msg">
-                  <img src="https://cdn.vectorstock.com/i/1000v/26/00/man-working-on-computer-icon-vector-15262600.jpg"
-                       class="rounded-circle user_img_msg">
+                  <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
+                       class="rounded-circle bot_img_msg">
                 </div>
                 <div class="msg_cotainer">
                   <div class="typing-dots">
@@ -137,12 +143,12 @@
           // Remove typing indicator
           $(".typing-dots").parent().parent().remove();
           
-          // Add bot response
+          // Add bot response with robot icon
           const botHtml = `
             <div class="d-flex justify-content-start mb-4">
               <div class="img_cont_msg">
-                <img src="https://cdn.vectorstock.com/i/1000v/26/00/man-working-on-computer-icon-vector-15262600.jpg"
-                     class="rounded-circle user_img_msg">
+                <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
+                     class="rounded-circle bot_img_msg">
               </div>
               <div class="msg_cotainer">
                 ${data}
@@ -160,8 +166,8 @@
           const errorHtml = `
             <div class="d-flex justify-content-start mb-4">
               <div class="img_cont_msg">
-                <img src="https://cdn.vectorstock.com/i/1000v/26/00/man-working-on-computer-icon-vector-15262600.jpg"
-                     class="rounded-circle user_img_msg">
+                <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
+                     class="rounded-circle bot_img_msg">
               </div>
               <div class="msg_cotainer">
                 Sorry, I encountered an error. Please try again.
