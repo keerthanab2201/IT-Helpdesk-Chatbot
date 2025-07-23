@@ -1,4 +1,3 @@
-// static/script.js
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('#chat-form');
     const input = document.querySelector('#user-input');

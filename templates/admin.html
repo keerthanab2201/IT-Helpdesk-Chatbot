@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel - IT Helpdesk Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 40px;
+        }
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            margin-bottom: 30px;
+        }
+        .form-section {
+            margin-bottom: 40px;
+        }
+        .logs {
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2 class="text-center">Admin Panel - IT Helpdesk Assistant</h2>
+
+    <div class="row">
+        <div class="col-md-6 form-section">
+            <div class="card p-4">
+                <h4>Upload Document</h4>
+                <form action="/upload_document" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <input type="file" class="form-control-file" name="document" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-6 form-section">
+            <div class="card p-4">
+                <h4>Add Website URL</h4>
+                <form action="/add_url" method="post">
+                    <div class="form-group">
+                        <input type="url" name="url" class="form-control" placeholder="https://example.com" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Add URL</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card p-4">
+                <h4>Chat Logs</h4>
+                <div class="logs">
+                    <p><em>(Future) Display recent chats here from database or log files...</em></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
