@@ -227,7 +227,7 @@ def add_url():
         # Embed and index
         index = pc.Index(PINECONE_INDEX_NAME)
         for chunk in chunks:
-            embedding = get_embedding(chunk)
+            embedding = embedding_model.encode(chunk).tolist()
             if embedding:
                 index.upsert(vectors=[{
                     "id": str(uuid.uuid4()),
