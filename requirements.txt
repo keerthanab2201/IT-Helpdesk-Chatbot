@@ -4,5 +4,6 @@ flask
 pypdf
 python-dotenv
 pinecone[grpc]
+beautifulsoup4
 -e . 
 markdown
