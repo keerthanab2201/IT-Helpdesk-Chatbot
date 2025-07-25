@@ -342,7 +342,7 @@
     <nav class="sidebar">
         <div class="sidebar-header">
             <a href="#" class="sidebar-brand">
-                <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png" alt="Logo">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Logo">
                 IT Helpdesk
             </a>
         </div>
@@ -417,7 +417,7 @@
                                 <i class="bi bi-chat-dots"></i>
                             </div>
                         </div>
-                        <p class="stat-value">1,245</p>
+                        <p class="stat-value" id="total-chats">Loading...</p>
                     </div>
                     
                     <div class="stat-card">
@@ -427,7 +427,7 @@
                                 <i class="bi bi-people"></i>
                             </div>
                         </div>
-                        <p class="stat-value">89</p>
+                        <p class="stat-value" id="active-sessions">Loading...</p>
                     </div>
                     
                     <div class="stat-card">
@@ -437,7 +437,7 @@
                                 <i class="bi bi-book"></i>
                             </div>
                         </div>
-                        <p class="stat-value">156</p>
+                        <p class="stat-value" id="knowledge-items">Loading...</p>
                     </div>
                     
                     <div class="stat-card">
@@ -447,7 +447,7 @@
                                 <i class="bi bi-key"></i>
                             </div>
                         </div>
-                        <p class="stat-value">4</p>
+                        <p class="stat-value" id="api-keys-count">Loading...</p>
                     </div>
                 </div>
                 
@@ -461,29 +461,14 @@
                                 <thead>
                                     <tr>
                                         <th>Time</th>
-                                        <th>Action</th>
-                                        <th>Details</th>
-                                        <th>Status</th>
+                                        <th>Session ID</th>
+                                        <th>User Message</th>
+                                        <th>Response Time</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="recent-activity">
                                     <tr>
-                                        <td>2 mins ago</td>
-                                        <td>Document Upload</td>
-                                        <td>user_manual.pdf</td>
-                                        <td><span class="badge bg-success">Completed</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>5 mins ago</td>
-                                        <td>Chat Session</td>
-                                        <td>User asked about login issues</td>
-                                        <td><span class="badge bg-info">Active</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>10 mins ago</td>
-                                        <td>API Key Created</td>
-                                        <td>Website Integration</td>
-                                        <td><span class="badge bg-success">Active</span></td>
+                                        <td colspan="4" class="text-center">Loading...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -499,12 +484,14 @@
                         <h5 class="card-title">Upload Documents</h5>
                     </div>
                     <div class="card-body">
-                        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                            <input type="file" id="fileInput" accept=".pdf" style="display: none;" multiple>
-                            <i class="bi bi-cloud-upload" style="font-size: 3rem; color: var(--text-secondary); display: block; margin-bottom: 1rem;"></i>
-                            <h6>Drop PDF files here or click to browse</h6>
-                            <p class="text-muted">Upload documents to expand the knowledge base</p>
-                        </div>
+                        <form action="/upload_document" method="post" enctype="multipart/form-data">
+                            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                                <input type="file" id="fileInput" name="pdf_file" accept=".pdf" style="display: none;" multiple onchange="this.form.submit()">
+                                <i class="bi bi-cloud-upload" style="font-size: 3rem; color: var(--text-secondary); display: block; margin-bottom: 1rem;"></i>
+                                <h6>Drop PDF files here or click to browse</h6>
+                                <p class="text-muted">Upload documents to expand the knowledge base</p>
+                            </div>
+                        </form>
                     </div>
                 </div>
                 
@@ -524,31 +511,11 @@
                                         <th>Name</th>
                                         <th>Added</th>
                                         <th>Status</th>
-                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="knowledgeTableBody">
                                     <tr>
-                                        <td><i class="bi bi-file-earmark-pdf text-danger"></i> PDF</td>
-                                        <td>User Manual v2.1.pdf</td>
-                                        <td>2 hours ago</td>
-                                        <td><span class="badge bg-success">Processed</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteKnowledgeItem(1)">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td><i class="bi bi-link-45deg text-primary"></i> URL</td>
-                                        <td>https://help.company.com/faq</td>
-                                        <td>1 day ago</td>
-                                        <td><span class="badge bg-warning">Processing</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteKnowledgeItem(2)">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
+                                        <td colspan="4" class="text-center">Loading...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -560,54 +527,32 @@
             <!-- API Keys Tab -->
             <div id="api-keys" class="tab-content">
                 <div class="content-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Current Active API Key</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info" id="current-api-key-info">
+                            <i class="bi bi-info-circle"></i> Loading current API key info...
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="card-title">API Keys</h5>
-                        <button class="btn btn-primary" onclick="showCreateKeyModal()">
-                            <i class="bi bi-plus"></i> Create Key
+                        <h5 class="card-title">Stored API Keys</h5>
+                        <button class="btn btn-primary" onclick="showAddKeyModal()">
+                            <i class="bi bi-plus"></i> Add Key
                         </button>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-4">
-                                <div class="border rounded p-3">
-                                    <h6>Website Integration</h6>
-                                    <div class="api-key-display">
-                                        hd_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
-                                        <button class="copy-btn" onclick="copyApiKey(this)">
-                                            <i class="bi bi-clipboard"></i>
-                                        </button>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center mt-3">
-                                        <small class="text-muted">Created 2 days ago</small>
-                                        <div>
-                                            <span class="badge bg-success">Active</span>
-                                            <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteApiKey(1)">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6 mb-4">
-                                <div class="border rounded p-3">
-                                    <h6>Mobile App</h6>
-                                    <div class="api-key-display">
-                                        hd_z9y8x7w6v5u4t3s2r1q0p9o8n7m6l5k4
-                                        <button class="copy-btn" onclick="copyApiKey(this)">
-                                            <i class="bi bi-clipboard"></i>
-                                        </button>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center mt-3">
-                                        <small class="text-muted">Created 1 week ago</small>
-                                        <div>
-                                            <span class="badge bg-success">Active</span>
-                                            <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteApiKey(2)">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            <strong>Priority:</strong> If you have stored API keys, the first active one will be used. 
+                            Otherwise, the system falls back to your .env file key.
+                        </div>
+                        <div class="row" id="api-keys-container">
+                            <div class="col-12 text-center">
+                                <p>Loading API keys...</p>
                             </div>
                         </div>
                     </div>
@@ -632,27 +577,9 @@
                                         <th>Response Time</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="chat-logs-body">
                                     <tr>
-                                        <td>2024-01-15 14:30:25</td>
-                                        <td>sess_abc123</td>
-                                        <td>How do I reset my password?</td>
-                                        <td>To reset your password, go to the login page and click...</td>
-                                        <td>1.2s</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2024-01-15 14:28:15</td>
-                                        <td>sess_def456</td>
-                                        <td>I can't access my account</td>
-                                        <td>I can help you with account access issues. First...</td>
-                                        <td>0.8s</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2024-01-15 14:25:10</td>
-                                        <td>sess_ghi789</td>
-                                        <td>What are the system requirements?</td>
-                                        <td>The system requirements are: Windows 10...</td>
-                                        <td>1.5s</td>
+                                        <td colspan="5" class="text-center">Loading...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -680,36 +607,9 @@
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="sessions-body">
                                     <tr>
-                                        <td>sess_abc123</td>
-                                        <td>2024-01-15 14:20:00</td>
-                                        <td>2024-01-15 14:30:25</td>
-                                        <td>5</td>
-                                        <td><span class="badge bg-success">Active</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-primary" onclick="viewSession('sess_abc123')">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-warning" onclick="endSession('sess_abc123')">
-                                                <i class="bi bi-stop"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>sess_def456</td>
-                                        <td>2024-01-15 14:15:30</td>
-                                        <td>2024-01-15 14:28:15</td>
-                                        <td>3</td>
-                                        <td><span class="badge bg-warning">Idle</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-primary" onclick="viewSession('sess_def456')">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-warning" onclick="endSession('sess_def456')">
-                                                <i class="bi bi-stop"></i>
-                                            </button>
-                                        </td>
+                                        <td colspan="6" class="text-center">Loading...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -730,14 +630,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addUrlForm">
+                    <form id="addUrlForm" action="/add_url" method="post">
                         <div class="mb-3">
                             <label for="urlInput" class="form-label">URL</label>
-                            <input type="url" class="form-control" id="urlInput" required>
+                            <input type="url" class="form-control" id="urlInput" name="url" required>
                         </div>
                         <div class="mb-3">
                             <label for="titleInput" class="form-label">Title (Optional)</label>
-                            <input type="text" class="form-control" id="titleInput">
+                            <input type="text" class="form-control" id="titleInput" name="title">
                         </div>
                     </form>
                 </div>
@@ -749,26 +649,31 @@
         </div>
     </div>
 
-    <!-- Create API Key Modal -->
-    <div class="modal fade" id="createKeyModal" tabindex="-1">
+    <!-- Add API Key Modal -->
+    <div class="modal fade" id="addKeyModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Create API Key</h5>
+                    <h5 class="modal-title">Add API Key</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="createKeyForm">
+                    <form id="addKeyForm">
                         <div class="mb-3">
                             <label for="keyNameInput" class="form-label">Key Name</label>
                             <input type="text" class="form-control" id="keyNameInput" required>
                             <div class="form-text">Choose a descriptive name for this API key</div>
                         </div>
+                        <div class="mb-3">
+                            <label for="apiKeyInput" class="form-label">API Key</label>
+                            <input type="text" class="form-control" id="apiKeyInput" required>
+                            <div class="form-text">Enter your OpenRouter API key</div>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="createApiKey()">Create Key</button>
+                    <button type="button" class="btn btn-primary" onclick="addApiKey()">Add Key</button>
                 </div>
             </div>
         </div>
@@ -799,71 +704,242 @@
                 'sessions': 'Sessions'
             };
             document.getElementById('page-title').textContent = titles[tabId];
+            
+            // Load data for the tab
+            loadTabData(tabId);
         }
 
-        // File upload functionality
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const files = e.target.files;
-            if (files.length > 0) {
-                uploadFiles(files);
+        // Load data for specific tabs
+        function loadTabData(tabId) {
+            switch(tabId) {
+                case 'dashboard':
+                    loadDashboardStats();
+                    loadRecentActivity();
+                    break;
+                case 'knowledge-base':
+                    loadKnowledgeBase();
+                    break;
+                case 'api-keys':
+                    loadApiKeys();
+                    break;
+                case 'chat-logs':
+                    loadChatLogs();
+                    break;
+                case 'sessions':
+                    loadSessions();
+                    break;
             }
-        });
+        }
 
-        function uploadFiles(files) {
-            // Show upload progress
-            const uploadArea = document.querySelector('.upload-area');
-            uploadArea.innerHTML = `
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <h6 class="mt-3">Uploading ${files.length} file(s)...</h6>
-            `;
-            
-            // Simulate upload (replace with actual upload logic)
-            setTimeout(() => {
-                uploadArea.innerHTML = `
-                    <i class="bi bi-check-circle text-success" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
-                    <h6>Upload completed successfully!</h6>
-                    <p class="text-muted">Files have been processed and added to knowledge base</p>
-                `;
+        // Load dashboard stats
+        async function loadDashboardStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
                 
-                // Reset after 3 seconds
-                setTimeout(() => {
-                    uploadArea.innerHTML = `
-                        <i class="bi bi-cloud-upload" style="font-size: 3rem; color: var(--text-secondary); display: block; margin-bottom: 1rem;"></i>
-                        <h6>Drop PDF files here or click to browse</h6>
-                        <p class="text-muted">Upload documents to expand the knowledge base</p>
-                    `;
-                }, 3000);
-            }, 2000);
+                document.getElementById('total-chats').textContent = data.total_chats;
+                document.getElementById('active-sessions').textContent = data.active_sessions;
+                document.getElementById('knowledge-items').textContent = data.knowledge_items;
+                document.getElementById('api-keys-count').textContent = data.api_keys;
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+            }
         }
 
-        // Drag and drop functionality
-        const uploadArea = document.querySelector('.upload-area');
-        
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-        
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-        
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            
-            const files = Array.from(e.dataTransfer.files).filter(file => 
-                file.type === 'application/pdf'
-            );
-            
-            if (files.length > 0) {
-                uploadFiles(files);
-            } else {
-                alert('Please drop only PDF files.');
+        // Load recent activity
+        async function loadRecentActivity() {
+            try {
+                const response = await fetch('/api/chat-logs');
+                const logs = await response.json();
+                
+                const tbody = document.getElementById('recent-activity');
+                tbody.innerHTML = '';
+                
+                logs.slice(0, 5).forEach(log => {
+                    const row = `
+                        <tr>
+                            <td>${new Date(log.timestamp).toLocaleString()}</td>
+                            <td>${log.session_id}</td>
+                            <td>${log.user_message}</td>
+                            <td>${log.response_time}</td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
             }
-        });
+        }
+
+        // Load knowledge base items
+        async function loadKnowledgeBase() {
+            try {
+                const response = await fetch('/api/knowledge-base');
+                const items = await response.json();
+                
+                const tbody = document.getElementById('knowledgeTableBody');
+                tbody.innerHTML = '';
+                
+                items.forEach(item => {
+                    const icon = item.type === 'PDF' ? 
+                        '<i class="bi bi-file-earmark-pdf text-danger"></i>' : 
+                        '<i class="bi bi-link-45deg text-primary"></i>';
+                    
+                    const badgeClass = {
+                        'processed': 'bg-success',
+                        'processing': 'bg-warning',
+                        'failed': 'bg-danger'
+                    }[item.status] || 'bg-secondary';
+                    
+                    const row = `
+                        <tr>
+                            <td>${icon} ${item.type}</td>
+                            <td>${item.name}</td>
+                            <td>${new Date(item.added_at).toLocaleString()}</td>
+                            <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            } catch (error) {
+                console.error('Error loading knowledge base:', error);
+            }
+        }
+
+        // Load API keys
+        async function loadApiKeys() {
+            try {
+                // Load current active key info
+                const currentResponse = await fetch('/api/current-api-key');
+                const currentData = await currentResponse.json();
+                
+                const currentInfo = document.getElementById('current-api-key-info');
+                if (currentData.source === 'database') {
+                    currentInfo.innerHTML = `
+                        <i class="bi bi-database"></i> 
+                        <strong>Currently using:</strong> ${currentData.key_name} (from database)
+                        <br><small>Key: ${currentData.api_key}</small>
+                    `;
+                    currentInfo.className = 'alert alert-success';
+                } else {
+                    currentInfo.innerHTML = `
+                        <i class="bi bi-file-earmark-text"></i> 
+                        <strong>Currently using:</strong> Environment variable (.env file)
+                        <br><small>Key: ${currentData.api_key}</small>
+                    `;
+                    currentInfo.className = 'alert alert-warning';
+                }
+                
+                // Load stored keys
+                const response = await fetch('/api/api-keys');
+                const keys = await response.json();
+                
+                const container = document.getElementById('api-keys-container');
+                container.innerHTML = '';
+                
+                if (keys.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-12 text-center text-muted">
+                            <p>No API keys stored. Add one to override the .env key.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                keys.forEach((key, index) => {
+                    const isActive = index === 0; // First key is the active one
+                    const keyCard = `
+                        <div class="col-md-6 mb-4">
+                            <div class="border rounded p-3 ${isActive ? 'border-success' : ''}">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6>${key.key_name}</h6>
+                                    ${isActive ? '<span class="badge bg-success">Active</span>' : ''}
+                                </div>
+                                <div class="api-key-display">
+                                    ${key.api_key}
+                                    <button class="copy-btn" onclick="copyApiKey(this)">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <small class="text-muted">Added ${new Date(key.created_at).toLocaleDateString()}</small>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteApiKey('${key.api_key}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', keyCard);
+                });
+            } catch (error) {
+                console.error('Error loading API keys:', error);
+            }
+        }
+
+        // Load chat logs
+        async function loadChatLogs() {
+            try {
+                const response = await fetch('/api/chat-logs');
+                const logs = await response.json();
+                
+                const tbody = document.getElementById('chat-logs-body');
+                tbody.innerHTML = '';
+                
+                logs.forEach(log => {
+                    const row = `
+                        <tr>
+                            <td>${new Date(log.timestamp).toLocaleString()}</td>
+                            <td>${log.session_id}</td>
+                            <td>${log.user_message}</td>
+                            <td>${log.bot_response}</td>
+                            <td>${log.response_time}</td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            } catch (error) {
+                console.error('Error loading chat logs:', error);
+            }
+        }
+
+        // Load sessions
+        async function loadSessions() {
+            try {
+                const response = await fetch('/api/sessions');
+                const sessions = await response.json();
+                
+                const tbody = document.getElementById('sessions-body');
+                tbody.innerHTML = '';
+                
+                sessions.forEach(session => {
+                    const badgeClass = session.status === 'active' ? 'bg-success' : 
+                                     session.status === 'idle' ? 'bg-warning' : 'bg-secondary';
+                    
+                    const row = `
+                        <tr>
+                            <td>${session.session_id}</td>
+                            <td>${new Date(session.started_at).toLocaleString()}</td>
+                            <td>${new Date(session.last_activity).toLocaleString()}</td>
+                            <td>${session.message_count}</td>
+                            <td><span class="badge ${badgeClass}">${session.status}</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewSession('${session.session_id}')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                ${session.status === 'active' ? 
+                                    `<button class="btn btn-sm btn-outline-warning" onclick="endSession('${session.session_id}')">
+                                        <i class="bi bi-stop"></i>
+                                    </button>` : ''}
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            } catch (error) {
+                console.error('Error loading sessions:', error);
+            }
+        }
 
         // Modal functions
         function showAddUrlModal() {
@@ -871,85 +947,49 @@
             modal.show();
         }
 
-        function showCreateKeyModal() {
-            const modal = new bootstrap.Modal(document.getElementById('createKeyModal'));
+        function showAddKeyModal() {
+            const modal = new bootstrap.Modal(document.getElementById('addKeyModal'));
             modal.show();
         }
 
         function addUrl() {
-            const url = document.getElementById('urlInput').value;
-            const title = document.getElementById('titleInput').value;
-            
-            if (!url) {
-                alert('Please enter a URL');
-                return;
-            }
-            
-            // Add to table (replace with actual API call)
-            const tableBody = document.getElementById('knowledgeTableBody');
-            const newRow = `
-                <tr>
-                    <td><i class="bi bi-link-45deg text-primary"></i> URL</td>
-                    <td>${title || url}</td>
-                    <td>Just now</td>
-                    <td><span class="badge bg-warning">Processing</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteKnowledgeItem(this)">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-            tableBody.insertAdjacentHTML('afterbegin', newRow);
-            
-            // Close modal and reset form
-            bootstrap.Modal.getInstance(document.getElementById('addUrlModal')).hide();
-            document.getElementById('addUrlForm').reset();
+            document.getElementById('addUrlForm').submit();
         }
 
-        function createApiKey() {
+        async function addApiKey() {
             const keyName = document.getElementById('keyNameInput').value;
+            const apiKey = document.getElementById('apiKeyInput').value;
             
-            if (!keyName) {
-                alert('Please enter a key name');
+            if (!keyName || !apiKey) {
+                alert('Please enter both key name and API key');
                 return;
             }
             
-            // Generate mock API key
-            const apiKey = 'hd_' + Math.random().toString(36).substring(2, 34);
-            
-            // Add to API keys section (replace with actual API call)
-            const apiKeysContainer = document.querySelector('#api-keys .row');
-            const newKeyCard = `
-                <div class="col-md-6 mb-4">
-                    <div class="border rounded p-3">
-                        <h6>${keyName}</h6>
-                        <div class="api-key-display">
-                            ${apiKey}
-                            <button class="copy-btn" onclick="copyApiKey(this)">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <small class="text-muted">Created just now</small>
-                            <div>
-                                <span class="badge bg-success">Active</span>
-                                <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteApiKey(this)">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            apiKeysContainer.insertAdjacentHTML('beforeend', newKeyCard);
-            
-            // Close modal and reset form
-            bootstrap.Modal.getInstance(document.getElementById('createKeyModal')).hide();
-            document.getElementById('createKeyForm').reset();
-            
-            // Show success message
-            showAlert('API key created successfully!', 'success');
+            try {
+                const response = await fetch('/api/add-api-key', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        key_name: keyName,
+                        api_key: apiKey 
+                    })
+                });
+                
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addKeyModal')).hide();
+                    document.getElementById('addKeyForm').reset();
+                    showAlert('API key added successfully!', 'success');
+                    loadApiKeys(); // Reload the API keys
+                } else {
+                    const error = await response.json();
+                    alert('Error adding API key: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Error adding API key:', error);
+                alert('Error adding API key');
+            }
         }
 
         function copyApiKey(button) {
@@ -966,17 +1006,27 @@
             });
         }
 
-        function deleteKnowledgeItem(button) {
-            if (confirm('Are you sure you want to delete this item?')) {
-                button.closest('tr').remove();
-                showAlert('Knowledge base item deleted', 'info');
-            }
-        }
-
-        function deleteApiKey(button) {
+        async function deleteApiKey(apiKey) {
             if (confirm('Are you sure you want to delete this API key?')) {
-                button.closest('.col-md-6').remove();
-                showAlert('API key deleted', 'info');
+                try {
+                    const response = await fetch('/api/delete-api-key', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ api_key: apiKey })
+                    });
+                    
+                    if (response.ok) {
+                        showAlert('API key deleted', 'info');
+                        loadApiKeys(); // Reload the API keys
+                    } else {
+                        alert('Error deleting API key');
+                    }
+                } catch (error) {
+                    console.error('Error deleting API key:', error);
+                    alert('Error deleting API key');
+                }
             }
         }
 
@@ -984,21 +1034,33 @@
             alert(`Viewing session: ${sessionId}\n(This would open session details)`);
         }
 
-        function endSession(sessionId) {
+        async function endSession(sessionId) {
             if (confirm(`End session ${sessionId}?`)) {
-                // Update status in table
-                const row = event.target.closest('tr');
-                const statusBadge = row.querySelector('.badge');
-                statusBadge.className = 'badge bg-secondary';
-                statusBadge.textContent = 'Ended';
-                
-                showAlert('Session ended', 'info');
+                try {
+                    const response = await fetch('/api/end-session', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ session_id: sessionId })
+                    });
+                    
+                    if (response.ok) {
+                        showAlert('Session ended', 'info');
+                        loadSessions(); // Reload sessions
+                    } else {
+                        alert('Error ending session');
+                    }
+                } catch (error) {
+                    console.error('Error ending session:', error);
+                    alert('Error ending session');
+                }
             }
         }
 
         function logout() {
             if (confirm('Are you sure you want to sign out?')) {
-                window.location.href = '/admin/logout';
+                window.location.href = '/';
             }
         }
 
@@ -1021,19 +1083,48 @@
             }, 5000);
         }
 
+        // Drag and drop functionality for file upload
+        const uploadArea = document.querySelector('.upload-area');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = Array.from(e.dataTransfer.files).filter(file => 
+                file.type === 'application/pdf'
+            );
+            
+            if (files.length > 0) {
+                const fileInput = document.getElementById('fileInput');
+                fileInput.files = e.dataTransfer.files;
+                fileInput.form.submit();
+            } else {
+                alert('Please drop only PDF files.');
+            }
+        });
+
         // Auto-refresh dashboard stats every 30 seconds
         setInterval(() => {
             if (document.getElementById('dashboard').classList.contains('active')) {
-                // Update stats (replace with actual API calls)
-                console.log('Refreshing dashboard stats...');
+                loadDashboardStats();
+                loadRecentActivity();
             }
         }, 30000);
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
-            // Set initial active states
-            document.querySelector('.nav-link').classList.add('active');
-            document.getElementById('dashboard').classList.add('active');
+            // Load initial dashboard data
+            loadDashboardStats();
+            loadRecentActivity();
             
             // Show welcome message
             setTimeout(() => {
