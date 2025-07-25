@@ -34,25 +34,30 @@ An intelligent conversational assistant designed to provide automated IT support
 git clone https://github.com/keerthanab2201/IT-Helpdesk-Chatbot.git
 cd IT-Helpdesk-Chatbot
 ```
-### 2. Create virtual environment
+### 2. Create conda environment
 
-bashpython -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+```bash
+conda create -n chatbot python=3.10 -y
 
-Install dependencies
+```bash
+conda activate chatbot
+```
+### 3. Install dependencies
 
-bashpip install -r requirements.txt
-
-Configure environment
+```bash
+pip install -r requirements.txt
+```
+### 4. Configure environment
 Create a .env file:
-
 envOPENROUTER_API_KEY=your_openrouter_api_key
 PINECONE_API_KEY=your_pinecone_api_key
 PINECONE_INDEX_NAME=testbot
 
-Run the application
+### 5. Run the application
 
-bashpython app.py
+```bash
+python app.py
+```
 Visit http://localhost:5000 for the chat interface or http://localhost:5000/admin for the admin panel.
 🛠️ Tech Stack
 
