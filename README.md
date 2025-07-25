@@ -47,11 +47,11 @@ conda activate chatbot
 ```bash
 pip install -r requirements.txt
 ```
-#### 4. Configure environment
-Create a .env file:
--OPENROUTER_API_KEY=your_openrouter_api_key
--PINECONE_API_KEY=your_pinecone_api_key
--PINECONE_INDEX_NAME=testbot
+#### 4. Configure environment  
+Create a `.env` file:<br>
+`OPENROUTER_API_KEY=your_openrouter_api_key`<br>
+`PINECONE_API_KEY=your_pinecone_api_key`<br>
+`PINECONE_INDEX_NAME=testbot`
 
 #### 5. Run the application
 
