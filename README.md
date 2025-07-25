@@ -1,39 +1,77 @@
-# IT-Helpdesk-Chatbot
-#how to run
-### step 1- create a conda environment after opening the repository
-```bash
-conda create -n chatbot python=3.10 -y
+IT Helpdesk Chatbot 🤖
 
-```bash
-conda activate chatbot
+An intelligent conversational assistant designed to provide automated IT support and help desk services using AI-powered responses and semantic search.
 
-### step 2- install the requirements
-```bash
-pip install -r requirements.txt
-```
+✨ Features
+Smart Chat Interface - Real-time AI-powered conversations
+Knowledge Base Integration - Upload PDFs and add URLs for contextual responses
+Admin Dashboard - Comprehensive management interface with analytics
+Session Management - Track and manage user interactions
+API Key Management - Secure key storage and rotation
+Vector Search - Semantic similarity search using Pinecone
+Chat Logging - Complete conversation history with performance metrics
 
-### step 3- Create a .env file in the root directory and add your Pinecone & OpenAI credentials as follows:
-```ini
-PINECONE_API_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-OPENAI_API_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-```
+🚀 Quick Start
+Prerequisites:
+Python 3.8+
+OpenRouter API key
+Pinecone API key
 
-```bash
-### step 4 - Run the following command to store embeddings to Pinecone
-python store_index.py
-```
-```bash
-### finally run the following command
-python app.py
-```
+Installation:
 
-Now,
-```bash
-open up localhost:5000
-```
+Clone the repository
 
-### Techstack Used:
-- Python
-- LangChain
-- Flask
-- Pinecone
+bashgit clone https://github.com/keerthanab2201/IT-Helpdesk-Chatbot.git
+cd IT-Helpdesk-Chatbot
+
+Create virtual environment
+
+bashpython -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+Install dependencies
+
+bashpip install -r requirements.txt
+
+Configure environment
+Create a .env file:
+
+envOPENROUTER_API_KEY=your_openrouter_api_key
+PINECONE_API_KEY=your_pinecone_api_key
+PINECONE_INDEX_NAME=testbot
+
+Run the application
+
+bashpython app.py
+Visit http://localhost:5000 for the chat interface or http://localhost:5000/admin for the admin panel.
+🛠️ Tech Stack
+
+Backend: Flask, Python
+Database: SQLite, Pinecone (Vector DB)
+AI/ML: OpenRouter API, SentenceTransformers
+Frontend: Bootstrap, jQuery
+File Processing: PyPDF2, BeautifulSoup4
+
+📁 Project Structure
+├── app.py                 # Main Flask application
+├── templates/
+│   ├── chat.html         # Chat interface
+│   ├── admin.html        # Admin dashboard
+│   └── logs.html         # Chat logs view
+├── static/               # CSS and static files
+├── data/                 # Uploaded documents
+├── requirements.txt      # Python dependencies
+└── .env                  # Environment variables
+🔧 Usage
+Chat Interface
+
+Navigate to / to start chatting
+Ask IT-related questions
+Get contextual responses based on uploaded knowledge
+
+Admin Panel:
+Access /admin for management
+Upload PDF documents to knowledge base
+Add URLs for web content extraction
+Monitor chat logs and sessions
+Manage API keys
