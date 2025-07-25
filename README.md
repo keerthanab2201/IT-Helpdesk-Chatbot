@@ -38,7 +38,7 @@ cd IT-Helpdesk-Chatbot
 
 ```bash
 conda create -n chatbot python=3.10 -y
-
+```
 ```bash
 conda activate chatbot
 ```
@@ -59,15 +59,16 @@ PINECONE_INDEX_NAME=testbot
 python app.py
 ```
 Visit http://localhost:5000 for the chat interface or http://localhost:5000/admin for the admin panel.
-🛠️ Tech Stack
 
-Backend: Flask, Python
-Database: SQLite, Pinecone (Vector DB)
-AI/ML: OpenRouter API, SentenceTransformers
-Frontend: Bootstrap, jQuery
-File Processing: PyPDF2, BeautifulSoup4
+##🛠️ Tech Stack
 
-📁 Project Structure
+**Backend: Flask, Python
+**Database: SQLite, Pinecone (Vector DB)
+**AI/ML: OpenRouter API, SentenceTransformers
+**Frontend: Bootstrap, jQuery
+**File Processing: PyPDF2, BeautifulSoup4
+
+##📁 Project Structure
 ├── app.py                 # Main Flask application
 ├── templates/
 │   ├── chat.html         # Chat interface
@@ -77,9 +78,9 @@ File Processing: PyPDF2, BeautifulSoup4
 ├── data/                 # Uploaded documents
 ├── requirements.txt      # Python dependencies
 └── .env                  # Environment variables
-🔧 Usage
-Chat Interface
 
+##🔧 Usage
+Chat Interface
 Navigate to / to start chatting
 Ask IT-related questions
 Get contextual responses based on uploaded knowledge
