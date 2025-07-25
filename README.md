@@ -49,9 +49,9 @@ pip install -r requirements.txt
 ```
 #### 4. Configure environment
 Create a .env file:
-envOPENROUTER_API_KEY=your_openrouter_api_key
-PINECONE_API_KEY=your_pinecone_api_key
-PINECONE_INDEX_NAME=testbot
+-OPENROUTER_API_KEY=your_openrouter_api_key
+-PINECONE_API_KEY=your_pinecone_api_key
+-PINECONE_INDEX_NAME=testbot
 
 #### 5. Run the application
 
@@ -62,38 +62,31 @@ Visit http://localhost:5000 for the chat interface or http://localhost:5000/admi
 
 ---
 
-##🛠️ Tech Stack
+## 🛠️ Tech Stack
 
--**Backend: Flask, Python
--**Database: SQLite, Pinecone (Vector DB)
--**AI/ML: OpenRouter API, SentenceTransformers
--**Frontend: Bootstrap, jQuery
--**File Processing: PyPDF2, BeautifulSoup4
-
----
-
-##📁 Project Structure
-├── app.py                 # Main Flask application
-├── templates/
-│   ├── chat.html         # Chat interface
-│   ├── admin.html        # Admin dashboard
-│   └── logs.html         # Chat logs view
-├── static/               # CSS and static files
-├── data/                 # Uploaded documents
-├── requirements.txt      # Python dependencies
-└── .env                  # Environment variables
+| Layer       | Tools / Libraries                    |
+|-------------|--------------------------------------|
+| **Backend** | Flask, Python                        |
+| **Database**| SQLite, Pinecone (Vector DB)         |
+| **AI/ML**   | OpenRouter API, SentenceTransformers |
+| **Frontend**| Bootstrap, jQuery                    |
+| **Parsing** | PyPDF2, BeautifulSoup4               |
 
 ---
 
-##🔧 Usage
-Chat Interface
-Navigate to / to start chatting
-Ask IT-related questions
-Get contextual responses based on uploaded knowledge
+## 🔧 Usage
 
-Admin Panel:
-Access /admin for management
-Upload PDF documents to knowledge base
-Add URLs for web content extraction
-Monitor chat logs and sessions
-Manage API keys
+### 💬 Chat Interface
+
+- Navigate to `/`  
+- Start chatting with the assistant  
+- Ask IT-related questions  
+- Get contextual responses based on uploaded documents and URLs  
+
+### 🧑‍💼 Admin Panel
+
+- Navigate to `/admin`  
+- Upload PDF documents to the knowledge base  
+- Add URLs for web content indexing  
+- Monitor chat logs and user sessions  
+- Manage API keys securely
