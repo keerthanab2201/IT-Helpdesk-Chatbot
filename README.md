@@ -1,30 +1,40 @@
-IT Helpdesk Chatbot 🤖
+# IT Helpdesk Chatbot 🤖  
 
 An intelligent conversational assistant designed to provide automated IT support and help desk services using AI-powered responses and semantic search.
 
-✨ Features
-Smart Chat Interface - Real-time AI-powered conversations
-Knowledge Base Integration - Upload PDFs and add URLs for contextual responses
-Admin Dashboard - Comprehensive management interface with analytics
-Session Management - Track and manage user interactions
-API Key Management - Secure key storage and rotation
-Vector Search - Semantic similarity search using Pinecone
-Chat Logging - Complete conversation history with performance metrics
+---
 
-🚀 Quick Start
-Prerequisites:
-Python 3.8+
-OpenRouter API key
-Pinecone API key
+## ✨ Features
 
-Installation:
+- **Smart Chat Interface** – Real-time AI-powered conversations  
+- **Knowledge Base Integration** – Upload PDFs and add URLs for contextual responses  
+- **Admin Dashboard** – Comprehensive management interface with analytics  
+- **Session Management** – Track and manage user interactions  
+- **API Key Management** – Secure key storage and rotation  
+- **Vector Search** – Semantic similarity search using Pinecone  
+- **Chat Logging** – Complete conversation history with performance metrics  
 
-Clone the repository
+---
 
-bashgit clone https://github.com/keerthanab2201/IT-Helpdesk-Chatbot.git
+## 🚀 Quick Start
+
+### ✅ Prerequisites
+
+- Python 3.8+  
+- [OpenRouter API key](https://openrouter.ai)  
+- [Pinecone API key](https://www.pinecone.io)  
+
+---
+
+### 📦 Installation
+
+#### 1. Clone the repository
+
+```bash
+git clone https://github.com/keerthanab2201/IT-Helpdesk-Chatbot.git
 cd IT-Helpdesk-Chatbot
-
-Create virtual environment
+```
+### 2. Create virtual environment
 
 bashpython -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
