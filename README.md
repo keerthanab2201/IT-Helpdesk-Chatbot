@@ -34,7 +34,7 @@ An intelligent conversational assistant designed to provide automated IT support
 git clone https://github.com/keerthanab2201/IT-Helpdesk-Chatbot.git
 cd IT-Helpdesk-Chatbot
 ```
-### 2. Create conda environment
+#### 2. Create conda environment
 
 ```bash
 conda create -n chatbot python=3.10 -y
@@ -42,31 +42,35 @@ conda create -n chatbot python=3.10 -y
 ```bash
 conda activate chatbot
 ```
-### 3. Install dependencies
+#### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
-### 4. Configure environment
+#### 4. Configure environment
 Create a .env file:
 envOPENROUTER_API_KEY=your_openrouter_api_key
 PINECONE_API_KEY=your_pinecone_api_key
 PINECONE_INDEX_NAME=testbot
 
-### 5. Run the application
+#### 5. Run the application
 
 ```bash
 python app.py
 ```
 Visit http://localhost:5000 for the chat interface or http://localhost:5000/admin for the admin panel.
 
+---
+
 ##🛠️ Tech Stack
 
-**Backend: Flask, Python
-**Database: SQLite, Pinecone (Vector DB)
-**AI/ML: OpenRouter API, SentenceTransformers
-**Frontend: Bootstrap, jQuery
-**File Processing: PyPDF2, BeautifulSoup4
+-**Backend: Flask, Python
+-**Database: SQLite, Pinecone (Vector DB)
+-**AI/ML: OpenRouter API, SentenceTransformers
+-**Frontend: Bootstrap, jQuery
+-**File Processing: PyPDF2, BeautifulSoup4
+
+---
 
 ##📁 Project Structure
 ├── app.py                 # Main Flask application
@@ -78,6 +82,8 @@ Visit http://localhost:5000 for the chat interface or http://localhost:5000/admi
 ├── data/                 # Uploaded documents
 ├── requirements.txt      # Python dependencies
 └── .env                  # Environment variables
+
+---
 
 ##🔧 Usage
 Chat Interface
