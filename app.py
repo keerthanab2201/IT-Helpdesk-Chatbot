@@ -1,3 +1,5 @@
+# Enhanced app.py with user upload features
+
 from flask import Flask, render_template, request, redirect, url_for, g, flash, jsonify
 from dotenv import load_dotenv
 import os
@@ -14,6 +16,7 @@ from bs4 import BeautifulSoup
 import urllib.request
 import urllib.parse
 import secrets
+import json
 
 # Load environment variables
 load_dotenv()
@@ -49,7 +52,7 @@ def init_db():
         db = get_db()
         cursor = db.cursor()
         
-        # Chat logs table - Create if not exists
+        # Chat logs table
         cursor.execute('''CREATE TABLE IF NOT EXISTS chat_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TEXT,
@@ -61,12 +64,12 @@ def init_db():
         try:
             cursor.execute('ALTER TABLE chat_logs ADD COLUMN session_id TEXT')
         except sqlite3.OperationalError:
-            pass  # Column already exists
+            pass
         
         try:
             cursor.execute('ALTER TABLE chat_logs ADD COLUMN response_time REAL')
         except sqlite3.OperationalError:
-            pass  # Column already exists
+            pass
         
         # API keys table
         cursor.execute('''CREATE TABLE IF NOT EXISTS api_keys (
@@ -84,7 +87,8 @@ def init_db():
             name TEXT,
             content TEXT,
             added_at TEXT,
-            status TEXT DEFAULT 'processing'
+            status TEXT DEFAULT 'processing',
+            source TEXT DEFAULT 'admin'
         )''')
         
         # Sessions table
@@ -95,6 +99,18 @@ def init_db():
             last_activity TEXT,
             message_count INTEGER DEFAULT 0,
             status TEXT DEFAULT 'active'
+        )''')
+        
+        # User uploads table (for tracking user-uploaded content)
+        cursor.execute('''CREATE TABLE IF NOT EXISTS user_uploads (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT,
+            filename TEXT,
+            file_type TEXT,
+            file_size INTEGER,
+            uploaded_at TEXT,
+            status TEXT DEFAULT 'processing',
+            error_message TEXT
         )''')
         
         db.commit()
@@ -114,8 +130,9 @@ def get_active_api_key():
     except Exception as e:
         print(f"Error getting API key from database: {e}")
     
-    # Fallback to environment variable
     return OPENROUTER_API_KEY
+
+# Initialize Pinecone
 pc = Pinecone(api_key=PINECONE_API_KEY)
 try:
     if PINECONE_INDEX_NAME not in pc.list_indexes().names():
@@ -131,10 +148,15 @@ try:
 except Exception as e:
     print(f"Error initializing Pinecone: {e}")
 
-# Home route
+# Home route - Enhanced chat interface
 @app.route("/")
 def home():
-    return render_template("chat.html")
+    return render_template("enhanced_chat.html")
+
+# Widget route
+@app.route("/widget")
+def widget():
+    return render_template("chat_widget.html")
 
 # Admin Panel
 @app.route("/admin")
@@ -148,19 +170,15 @@ def get_stats():
         db = get_db()
         cursor = db.cursor()
         
-        # Total chats
         cursor.execute("SELECT COUNT(*) FROM chat_logs")
         total_chats = cursor.fetchone()[0]
         
-        # Active sessions
         cursor.execute("SELECT COUNT(*) FROM sessions WHERE status = 'active'")
         active_sessions = cursor.fetchone()[0]
         
-        # Knowledge items
         cursor.execute("SELECT COUNT(*) FROM knowledge_base")
         knowledge_items = cursor.fetchone()[0]
         
-        # API keys
         cursor.execute("SELECT COUNT(*) FROM api_keys WHERE status = 'active'")
         api_keys = cursor.fetchone()[0]
         
@@ -226,81 +244,24 @@ def get_knowledge_base():
     try:
         db = get_db()
         cursor = db.cursor()
-        cursor.execute("SELECT type, name, added_at, status FROM knowledge_base ORDER BY added_at DESC")
+        cursor.execute("""
+            SELECT type, name, added_at, status, source 
+            FROM knowledge_base 
+            ORDER BY added_at DESC
+        """)
         items = cursor.fetchall()
         
         return jsonify([{
             "type": item[0],
             "name": item[1],
             "added_at": item[2],
-            "status": item[3]
+            "status": item[3],
+            "source": item[4] if len(item) > 4 else "admin"
         } for item in items])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# API to get API keys
-@app.route("/api/api-keys")
-def get_api_keys():
-    try:
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("SELECT key_name, api_key, created_at, status FROM api_keys WHERE status = 'active'")
-        keys = cursor.fetchall()
-        
-        return jsonify([{
-            "key_name": key[0],
-            "api_key": key[1],
-            "created_at": key[2],
-            "status": key[3]
-        } for key in keys])
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# API to add existing API key
-@app.route("/api/add-api-key", methods=["POST"])
-def add_api_key():
-    try:
-        key_name = request.json.get("key_name")
-        api_key = request.json.get("api_key")
-        
-        if not key_name or not api_key:
-            return jsonify({"error": "Key name and API key are required"}), 400
-        
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("""
-            INSERT INTO api_keys (key_name, api_key, created_at, status) 
-            VALUES (?, ?, ?, 'active')
-        """, (key_name, api_key, datetime.utcnow().isoformat()))
-        db.commit()
-        
-        return jsonify({
-            "key_name": key_name,
-            "api_key": api_key,
-            "created_at": datetime.utcnow().isoformat(),
-            "status": "active"
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# API to delete API key
-@app.route("/api/delete-api-key", methods=["POST"])
-def delete_api_key():
-    try:
-        api_key = request.json.get("api_key")
-        if not api_key:
-            return jsonify({"error": "API key is required"}), 400
-        
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("UPDATE api_keys SET status = 'deleted' WHERE api_key = ?", (api_key,))
-        db.commit()
-        
-        return jsonify({"success": True})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# Chat response
+# Enhanced chat response with session management
 @app.route("/get", methods=["POST"])
 def get_bot_response():
     try:
@@ -327,16 +288,35 @@ def get_bot_response():
                 VALUES (?, ?, ?, 1, 'active')
             """, (session_id, datetime.utcnow().isoformat(), datetime.utcnow().isoformat()))
 
+        # Get context from vector database
         embedding = embedding_model.encode(user_message).tolist()
         index = pc.Index(PINECONE_INDEX_NAME)
         query_response = index.query(vector=embedding, top_k=3, include_metadata=True)
 
         context = "\n".join([m.metadata.get("text", "") for m in query_response.matches])
 
+        # Enhanced system prompt
+        system_prompt = f"""You are an IT helpdesk assistant. You are helpful, knowledgeable, and professional.
+
+Key capabilities:
+- Answer IT support questions
+- Help with technical troubleshooting
+- Provide step-by-step guidance
+- Explain technical concepts clearly
+
+If users mention uploading documents or adding URLs, remind them they can use the attachment (📎) button in the chat interface to:
+- Upload PDF documents for analysis
+- Add URLs to expand the knowledge base
+
+Use this context if relevant to the user's question:
+{context}
+
+Be concise but thorough. Use markdown formatting for better readability."""
+
         payload = {
-            "model": "qwen/qwen3-30b-a3b:free",
+            "model": "qwen/qwen-2.5-72b-instruct",
             "messages": [
-                {"role": "system", "content": f"You are an IT helpdesk assistant. Use this context if relevant:\n{context}"},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
             ],
             "temperature": 0.7,
@@ -369,52 +349,244 @@ def get_bot_response():
 
     except Exception as e:
         print("Chat error:", e)
-        return "Sorry, I encountered an error."
+        return "Sorry, I encountered an error. Please try again."
 
-# Upload documents
-ALLOWED_EXTENSIONS = {"pdf"}
+# User document upload endpoint
+@app.route("/user_upload", methods=["POST"])
+def user_upload_document():
+    try:
+        session_id = request.form.get("session_id", str(uuid.uuid4()))
+        
+        if 'file' not in request.files:
+            return jsonify({"error": "No file provided"}), 400
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"error": "No file selected"}), 400
 
+        if not file.filename.lower().endswith('.pdf'):
+            return jsonify({"error": "Only PDF files are supported"}), 400
+
+        # File size check (10MB limit)
+        if len(file.read()) > 10 * 1024 * 1024:
+            return jsonify({"error": "File too large. Maximum size is 10MB"}), 400
+        
+        file.seek(0)  # Reset file pointer after reading for size check
+
+        filename = secure_filename(file.filename)
+        timestamp = datetime.utcnow().isoformat()
+        
+        # Save file temporarily
+        upload_dir = "user_uploads"
+        os.makedirs(upload_dir, exist_ok=True)
+        filepath = os.path.join(upload_dir, f"{session_id}_{timestamp}_{filename}")
+        file.save(filepath)
+
+        # Record upload in database
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("""
+            INSERT INTO user_uploads (session_id, filename, file_type, file_size, uploaded_at, status) 
+            VALUES (?, ?, 'PDF', ?, ?, 'processing')
+        """, (session_id, filename, os.path.getsize(filepath), timestamp))
+        
+        cursor.execute("""
+            INSERT INTO knowledge_base (type, name, content, added_at, status, source) 
+            VALUES ('PDF', ?, ?, ?, 'processing', 'user')
+        """, (filename, filepath, timestamp))
+        
+        upload_id = cursor.lastrowid
+        db.commit()
+
+        # Process PDF in background (simplified for demo)
+        try:
+            reader = PdfReader(filepath)
+            full_text = ""
+
+            for page in reader.pages:
+                try:
+                    page_text = page.extract_text()
+                    if page_text:
+                        full_text += page_text + "\n"
+                except Exception as e:
+                    print(f"Error reading page: {e}")
+
+            if not full_text.strip():
+                raise Exception("No readable text found in PDF")
+
+            # Chunk and index
+            chunks = [full_text[i:i+500] for i in range(0, len(full_text), 500)]
+            index = pc.Index(PINECONE_INDEX_NAME)
+
+            for chunk in chunks:
+                try:
+                    embedding = embedding_model.encode(chunk).tolist()
+                    index.upsert(vectors=[{
+                        "id": f"user_{session_id}_{str(uuid.uuid4())}",
+                        "values": embedding,
+                        "metadata": {"text": chunk, "source": "user_upload", "filename": filename}
+                    }])
+                except Exception as e:
+                    print(f"Error embedding chunk: {e}")
+
+            # Update status to processed
+            cursor.execute("UPDATE knowledge_base SET status = 'processed' WHERE id = ?", (upload_id,))
+            cursor.execute("UPDATE user_uploads SET status = 'processed' WHERE session_id = ? AND filename = ?", (session_id, filename))
+            db.commit()
+
+            # Clean up temporary file
+            os.remove(filepath)
+
+            return jsonify({
+                "success": True, 
+                "message": f"Document '{filename}' processed successfully!",
+                "filename": filename
+            })
+
+        except Exception as processing_error:
+            # Update status to failed
+            cursor.execute("UPDATE knowledge_base SET status = 'failed' WHERE id = ?", (upload_id,))
+            cursor.execute("UPDATE user_uploads SET status = 'failed', error_message = ? WHERE session_id = ? AND filename = ?", 
+                         (str(processing_error), session_id, filename))
+            db.commit()
+            
+            # Clean up temporary file
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            
+            return jsonify({"error": f"Error processing document: {str(processing_error)}"}), 500
+
+    except Exception as e:
+        print(f"Upload error: {e}")
+        return jsonify({"error": "Upload failed. Please try again."}), 500
+
+# User URL addition endpoint
+@app.route("/user_add_url", methods=["POST"])
+def user_add_url():
+    try:
+        data = request.get_json()
+        url = data.get("url", "").strip()
+        session_id = data.get("session_id", str(uuid.uuid4()))
+        
+        if not url:
+            return jsonify({"error": "URL is required"}), 400
+
+        # Basic URL validation
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(url)
+            if not parsed.scheme or not parsed.netloc:
+                raise ValueError("Invalid URL format")
+        except Exception:
+            return jsonify({"error": "Please enter a valid URL"}), 400
+
+        title = parsed.netloc
+        timestamp = datetime.utcnow().isoformat()
+
+        # Record in database
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("""
+            INSERT INTO knowledge_base (type, name, content, added_at, status, source) 
+            VALUES ('URL', ?, ?, ?, 'processing', 'user')
+        """, (title, url, timestamp))
+        
+        url_id = cursor.lastrowid
+        db.commit()
+
+        try:
+            # Fetch and process URL content
+            with urllib.request.urlopen(url) as response:
+                html_content = response.read()
+
+            soup = BeautifulSoup(html_content, 'html.parser')
+            
+            # Remove script and style elements
+            for script in soup(["script", "style"]):
+                script.decompose()
+            
+            text = soup.get_text(separator='\n', strip=True)
+            
+            if not text.strip():
+                raise Exception("No content found at URL")
+
+            # Chunk and index
+            chunks = [text[i:i + 500] for i in range(0, len(text), 500)]
+            index = pc.Index(PINECONE_INDEX_NAME)
+            
+            for chunk in chunks:
+                try:
+                    embedding = embedding_model.encode(chunk).tolist()
+                    if embedding:
+                        index.upsert(vectors=[{
+                            "id": f"user_url_{session_id}_{str(uuid.uuid4())}",
+                            "values": embedding,
+                            "metadata": {"text": chunk, "source": "user_url", "url": url, "title": title}
+                        }])
+                except Exception as e:
+                    print(f"Error embedding chunk: {e}")
+
+            # Update status to processed
+            cursor.execute("UPDATE knowledge_base SET status = 'processed' WHERE id = ?", (url_id,))
+            db.commit()
+
+            return jsonify({
+                "success": True,
+                "message": f"Content from {title} added successfully!",
+                "title": title
+            })
+
+        except Exception as processing_error:
+            # Update status to failed
+            cursor.execute("UPDATE knowledge_base SET status = 'failed' WHERE id = ?", (url_id,))
+            db.commit()
+            
+            return jsonify({"error": f"Error processing URL: {str(processing_error)}"}), 500
+
+    except Exception as e:
+        print(f"URL addition error: {e}")
+        return jsonify({"error": "Failed to add URL. Please try again."}), 500
+
+# Original admin upload endpoints (keeping for backwards compatibility)
 @app.route("/upload_document", methods=["POST"])
 def upload_document():
-    print("Received upload_document request...")
+    # ... (keep existing admin upload functionality)
+    return admin_upload_document()
 
+@app.route("/add_url", methods=["POST"])
+def add_url():
+    # ... (keep existing admin URL functionality)
+    return admin_add_url()
+
+def admin_upload_document():
+    """Original admin upload functionality"""
     if 'pdf_file' not in request.files:
-        print("No file part found.")
         return "No file part in the request.", 400
 
     file = request.files['pdf_file']
-    print("Uploaded file:", file.filename)
-
     if file.filename == '':
-        print("No selected file.")
         return "No selected file.", 400
 
-    if file and allowed_file(file.filename):
+    if file and file.filename.lower().endswith('.pdf'):
         filename = secure_filename(file.filename)
         filepath = os.path.join("data", filename)
-        print("Saving file to:", filepath)
         
-        # Create data directory if it doesn't exist
         os.makedirs("data", exist_ok=True)
         file.save(filepath)
 
         try:
-            # Add to knowledge base
             db = get_db()
             cursor = db.cursor()
             cursor.execute("""
-                INSERT INTO knowledge_base (type, name, content, added_at, status) 
-                VALUES ('PDF', ?, ?, ?, 'processing')
+                INSERT INTO knowledge_base (type, name, content, added_at, status, source) 
+                VALUES ('PDF', ?, ?, ?, 'processing', 'admin')
             """, (filename, filepath, datetime.utcnow().isoformat()))
             db.commit()
 
+            # Process PDF (same logic as before)
             reader = PdfReader(filepath)
             full_text = ""
 
-            # Extract text safely
             for page_num, page in enumerate(reader.pages):
                 try:
                     page_text = page.extract_text()
@@ -424,13 +596,11 @@ def upload_document():
                     print(f"Error reading page {page_num}: {e}")
 
             if not full_text.strip():
-                print("No readable text found in the PDF.")
-                # Update status to failed
-                cursor.execute("UPDATE knowledge_base SET status = 'failed' WHERE name = ?", (filename,))
+                cursor.execute("UPDATE knowledge_base SET status = 'failed' WHERE name = ? AND source = 'admin'", (filename,))
                 db.commit()
                 return "Uploaded PDF has no readable text.", 400
 
-            # Chunk and index into Pinecone
+            # Chunk and index
             chunks = [full_text[i:i+500] for i in range(0, len(full_text), 500)]
             index = pc.Index(PINECONE_INDEX_NAME)
 
@@ -440,33 +610,24 @@ def upload_document():
                     index.upsert(vectors=[{
                         "id": str(uuid.uuid4()),
                         "values": embedding,
-                        "metadata": {"text": chunk}
+                        "metadata": {"text": chunk, "source": "admin", "filename": filename}
                     }])
                 except Exception as e:
                     print(f"Error embedding chunk: {e}")
 
-            # Update status to processed
-            cursor.execute("UPDATE knowledge_base SET status = 'processed' WHERE name = ?", (filename,))
+            cursor.execute("UPDATE knowledge_base SET status = 'processed' WHERE name = ? AND source = 'admin'", (filename,))
             db.commit()
 
-            print("PDF processed and indexed successfully.")
             return redirect(url_for("admin"))
 
         except Exception as e:
             print("PDF processing error:", e)
-            # Update status to failed
-            db = get_db()
-            cursor = db.cursor()
-            cursor.execute("UPDATE knowledge_base SET status = 'failed' WHERE name = ?", (filename,))
-            db.commit()
             return f"Error processing file: {e}", 500
 
-    print("Invalid file type.")
     return "Invalid file type. Please upload a PDF.", 400
 
-# Add URLs
-@app.route("/add_url", methods=["POST"])
-def add_url():
+def admin_add_url():
+    """Original admin URL functionality"""
     try:
         url = request.form.get("url")
         title = request.form.get("title", url)
@@ -474,56 +635,102 @@ def add_url():
         if not url:
             return redirect(url_for("admin"))
 
-        print(f"Received URL to add: {url}")
-
-        # Add to knowledge base
         db = get_db()
         cursor = db.cursor()
         cursor.execute("""
-            INSERT INTO knowledge_base (type, name, content, added_at, status) 
-            VALUES ('URL', ?, ?, ?, 'processing')
+            INSERT INTO knowledge_base (type, name, content, added_at, status, source) 
+            VALUES ('URL', ?, ?, ?, 'processing', 'admin')
         """, (title, url, datetime.utcnow().isoformat()))
         db.commit()
 
-        # Fetch page content
+        # Process URL (same logic as before)
         with urllib.request.urlopen(url) as response:
             html_content = response.read()
 
-        # Extract text using BeautifulSoup
         soup = BeautifulSoup(html_content, 'html.parser')
         text = soup.get_text(separator='\n', strip=True)
 
-        # Chunk text
         chunks = [text[i:i + 500] for i in range(0, len(text), 500)]
-
-        # Embed and index
         index = pc.Index(PINECONE_INDEX_NAME)
+        
         for chunk in chunks:
             embedding = embedding_model.encode(chunk).tolist()
             if embedding:
                 index.upsert(vectors=[{
                     "id": str(uuid.uuid4()),
                     "values": embedding,
-                    "metadata": {"text": chunk}
+                    "metadata": {"text": chunk, "source": "admin", "url": url}
                 }])
 
-        # Update status to processed
-        cursor.execute("UPDATE knowledge_base SET status = 'processed' WHERE name = ? AND content = ?", (title, url))
+        cursor.execute("UPDATE knowledge_base SET status = 'processed' WHERE name = ? AND content = ? AND source = 'admin'", (title, url))
         db.commit()
 
-        print("URL content successfully embedded and indexed.")
         return redirect(url_for("admin"))
 
     except Exception as e:
         print("Error processing URL:", e)
-        # Update status to failed
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("UPDATE knowledge_base SET status = 'failed' WHERE content = ?", (url,))
-        db.commit()
         return redirect(url_for("admin"))
 
-# API to get current active API key info
+# Additional API endpoints for the enhanced features
+@app.route("/api/add-api-key", methods=["POST"])
+def add_api_key():
+    try:
+        key_name = request.json.get("key_name")
+        api_key = request.json.get("api_key")
+        
+        if not key_name or not api_key:
+            return jsonify({"error": "Key name and API key are required"}), 400
+        
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("""
+            INSERT INTO api_keys (key_name, api_key, created_at, status) 
+            VALUES (?, ?, ?, 'active')
+        """, (key_name, api_key, datetime.utcnow().isoformat()))
+        db.commit()
+        
+        return jsonify({
+            "key_name": key_name,
+            "api_key": api_key,
+            "created_at": datetime.utcnow().isoformat(),
+            "status": "active"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/delete-api-key", methods=["POST"])
+def delete_api_key():
+    try:
+        api_key = request.json.get("api_key")
+        if not api_key:
+            return jsonify({"error": "API key is required"}), 400
+        
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("UPDATE api_keys SET status = 'deleted' WHERE api_key = ?", (api_key,))
+        db.commit()
+        
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/api-keys")
+def get_api_keys():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT key_name, api_key, created_at, status FROM api_keys WHERE status = 'active'")
+        keys = cursor.fetchall()
+        
+        return jsonify([{
+            "key_name": key[0],
+            "api_key": key[1],
+            "created_at": key[2],
+            "status": key[3]
+        } for key in keys])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/api/current-api-key")
 def get_current_api_key():
     try:
@@ -548,6 +755,7 @@ def get_current_api_key():
             })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 @app.route("/api/end-session", methods=["POST"])
 def end_session():
     try:

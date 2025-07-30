@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IT Helpdesk Widget Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .demo-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      padding: 40px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .demo-description {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-left: 4px solid #667eea;
+    }
+
+    /* WIDGET STYLES */
+    .helpdesk-widget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 10000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .widget-trigger {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      color: white;
+      font-size: 24px;
+    }
+
+    .widget-trigger:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+    }
+
+    .widget-trigger.active {
+      background: linear-gradient(135deg, #dc3545, #c82333);
+    }
+
+    .widget-container {
+      position: absolute;
+      bottom: 80px;
+      right: 0;
+      width: 380px;
+      height: 550px;
+      background: #1e1e1e;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      transform: translateY(20px) scale(0.9);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .widget-container.show {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .widget-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .widget-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      margin-right: 12px;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .widget-info h4 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .widget-info p {
+      margin: 0;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .widget-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+      margin-left: auto;
+      padding: 5px;
+    }
+
+    .widget-close:hover {
+      opacity: 1;
+    }
+
+    .widget-messages {
+      height: 350px;
+      overflow-y: auto;
+      padding: 15px;
+      background: #181818;
+    }
+
+    .widget-message {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .widget-message.user {
+      justify-content: flex-end;
+    }
+
+    .widget-message-content {
+      max-width: 80%;
+      padding: 10px 15px;
+      border-radius: 15px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .widget-message.bot .widget-message-content {
+      background: #007bff;
+      color: white;
+      border-bottom-left-radius: 5px;
+    }
+
+    .widget-message.user .widget-message-content {
+      background: linear-gradient(135deg, #00b09b, #96c93d);
+      color: white;
+      border-bottom-right-radius: 5px;
+    }
+
+    .widget-message-time {
+      font-size: 10px;
+      opacity: 0.7;
+      margin-top: 5px;
+      display: block;
+    }
+
+    .widget-input-area {
+      background: #2c2f33;
+      padding: 15px;
+      border-radius: 0 0 15px 15px;
+    }
+
+    .widget-upload-panel {
+      background: #333;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      padding: 12px;
+      display: none;
+    }
+
+    .widget-upload-panel.show {
+      display: block;
+      animation: widgetSlideDown 0.3s ease;
+    }
+
+    @keyframes widgetSlideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .widget-upload-section {
+      margin-bottom: 12px;
+    }
+
+    .widget-upload-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .widget-upload-title {
+      color: #667eea;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .widget-file-drop {
+      border: 2px dashed #555;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+      color: #aaa;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 12px;
+    }
+
+    .widget-file-drop:hover, .widget-file-drop.dragover {
+      border-color: #667eea;
+      background-color: rgba(102, 126, 234, 0.1);
+      color: white;
+    }
+
+    .widget-url-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .widget-url-input {
+      flex: 1;
+      background: #404040;
+      border: 1px solid #555;
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: white;
+      font-size: 12px;
+    }
+
+    .widget-url-input::placeholder {
+      color: #aaa;
+    }
+
+    .widget-url-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.3s;
+    }
+
+    .widget-url-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .widget-input-container {
+      background: #404040;
+      border-radius: 20px;
+      padding: 5px 15px 5px 15px;
+      display: flex;
+      align-items: center;
+    }
+
+    .widget-text-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: white;
+      padding: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .widget-text-input::placeholder {
+      color: #aaa;
+    }
+
+    .widget-input-actions {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .widget-action-btn {
+      background: none;
+      border: none;
+      color: #aaa;
+      padding: 6px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .widget-action-btn:hover {
+      background: #555;
+      color: white;
+    }
+
+    .widget-send-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .widget-send-btn:hover {
+      background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    }
+
+    .widget-typing {
+      display: flex;
+      gap: 3px;
+      padding: 5px 0;
+    }
+
+    .widget-typing span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #667eea;
+      animation: widgetTyping 1.4s infinite;
+    }
+
+    .widget-typing span:nth-child(1) { animation-delay: 0s; }
+    .widget-typing span:nth-child(2) { animation-delay: 0.2s; }
+    .widget-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes widgetTyping {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-8px); opacity: 1; }
+    }
+
+    .widget-hidden-input {
+      display: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .widget-container {
+        width: calc(100vw - 40px);
+        right: 20px;
+        left: 20px;
+        height: 500px;
+      }
+      
+      .widget-trigger {
+        width: 55px;
+        height: 55px;
+        font-size: 22px;
+      }
+    }
+
+    /* Demo page specific styles */
+    .embed-code {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+    }
+
+    .embed-code h3 {
+      margin-top: 0;
+      color: #495057;
+      font-family: Arial, sans-serif;
+    }
+
+    .copy-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .copy-btn:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-content">
+    <h1>🤖 IT Helpdesk Widget Demo</h1>
+    
+    <div class="demo-description">
+      <h3>Interactive Chatbot Widget</h3>
+      <p>This page demonstrates the IT Helpdesk chatbot widget that can be embedded on any website. The widget includes:</p>
+      <ul>
+        <li>💬 Real-time AI-powered conversations</li>
+        <li>📎 Document upload functionality</li>
+        <li>🔗 URL knowledge base expansion</li>
+        <li>📱 Responsive design for all devices</li>
+        <li>⚡ Easy integration with any website</li>
+      </ul>
+      <p><strong>Try it out:</strong> Click the chat button in the bottom-right corner!</p>
+    </div>
+
+    <div class="embed-code">
+      <h3>📋 Embed Code</h3>
+      <p>Copy and paste this code into your website's HTML to add the chatbot widget:</p>
+      <pre><code>&lt;!-- IT Helpdesk Widget --&gt;
+&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  // Widget configuration
+  window.HelpdeskWidget = {
+    apiUrl: 'https://your-domain.com', // Replace with your backend URL
+    theme: 'dark', // 'light' or 'dark'
+    position: 'bottom-right', // 'bottom-right' or 'bottom-left'
+    greeting: 'Hi! How can I help you today?'
+  };
+&lt;/script&gt;
+&lt;script src="https://your-domain.com/static/widget.js"&gt;&lt;/script&gt;
+&lt;!-- End Widget --&gt;</code></pre>
+      <button class="copy-btn" onclick="copyEmbedCode()">📋 Copy Code</button>
+    </div>
+
+    <div class="embed-code">
+      <h3>⚙️ Configuration Options</h3>
+      <pre><code>window.HelpdeskWidget = {
+  apiUrl: 'https://your-domain.com',           // Your backend URL
+  theme: 'dark',                               // 'light' or 'dark'
+  position: 'bottom-right',                    // Widget position
+  greeting: 'Hi! How can I help you today?',   // Welcome message
+  allowUploads: true,                          // Enable file uploads
+  allowUrls: true,                             // Enable URL additions
+  maxFileSize: 10,                             // Max file size in MB
+  supportedFiles: ['pdf'],                     // Supported file types
+  primaryColor: '#667eea',                     // Custom primary color
+  secondaryColor: '#764ba2'                    // Custom secondary color
+};</code></pre>
+    </div>
+  </div>
+
+  <!-- THE ACTUAL WIDGET -->
+  <div class="helpdesk-widget" id="helpdeskWidget">
+    <button class="widget-trigger" id="widgetTrigger">
+      <span class="trigger-icon">💬</span>
+    </button>
+    
+    <div class="widget-container" id="widgetContainer">
+      <div class="widget-header">
+        <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png" alt="Assistant" class="widget-avatar">
+        <div class="widget-info">
+          <h4>IT Helpdesk</h4>
+          <p>We're here to help!</p>
+        </div>
+        <button class="widget-close" id="widgetClose">×</button>
+      </div>
+      
+      <div class="widget-messages" id="widgetMessages">
+        <div class="widget-message bot">
+          <div class="widget-message-content">
+            👋 Hi! I'm your IT Helpdesk Assistant. I can help you with:
+            <br>• Technical questions
+            <br>• Document analysis  
+            <br>• Knowledge base expansion
+            <br><br>How can I assist you today?
+            <span class="widget-message-time">Just now</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="widget-input-area">
+        <div class="widget-upload-panel" id="widgetUploadPanel">
+          <div class="widget-upload-section">
+            <div class="widget-upload-title">
+              📄 Upload Documents
+            </div>
+            <div class="widget-file-drop" onclick="document.getElementById('widgetFileInput').click()">
+              📁 Drop PDF files or click to browse
+            </div>
+            <input type="file" id="widgetFileInput" class="widget-hidden-input" accept=".pdf" multiple>
+          </div>
+          
+          <div class="widget-upload-section">
+            <div class="widget-upload-title">
+              🔗 Add URL
+            </div>
+            <div class="widget-url-group">
+              <input type="url" class="widget-url-input" id="widgetUrlInput" placeholder="Enter URL...">
+              <button class="widget-url-btn" onclick="widgetAddUrl()">Add</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="widget-input-container">
+          <input type="text" class="widget-text-input" id="widgetTextInput" placeholder="Type your message...">
+          <div class="widget-input-actions">
+            <button class="widget-action-btn" onclick="widgetToggleUploads()" title="Upload files">
+              📎
+            </button>
+            <button class="widget-action-btn widget-send-btn" onclick="widgetSendMessage()" title="Send">
+              ➤
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Widget functionality
+    let widgetOpen = false;
+    let widgetSessionId = Math.random().toString(36).substr(2, 9);
+    
+    // Configuration (can be overridden by parent page)
+    const widgetConfig = window.HelpdeskWidget || {
+      apiUrl: window.location.origin,
+      theme: 'dark',
+      position: 'bottom-right',
+      greeting: 'Hi! How can I help you today?',
+      allowUploads: true,
+      allowUrls: true,
+      maxFileSize: 10,
+      supportedFiles: ['pdf']
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeWidget();
+    });
+
+    function initializeWidget() {
+      const trigger = document.getElementById('widgetTrigger');
+      const container = document.getElementById('widgetContainer');
+      const closeBtn = document.getElementById('widgetClose');
+      const textInput = document.getElementById('widgetTextInput');
+      const fileInput = document.getElementById('widgetFileInput');
+
+      // Toggle widget
+      trigger.addEventListener('click', toggleWidget);
+      closeBtn.addEventListener('click', closeWidget);
+
+      // Send message on Enter
+      textInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          widgetSendMessage();
+        }
+      });
+
+      // File upload handling
+      fileInput.addEventListener('change', function() {
+        widgetHandleFileUpload(this.files);
+      });
+
+      // Initialize drag and drop
+      initializeWidgetDragDrop();
+
+      // Click outside to close
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('.helpdesk-widget')) {
+          document.getElementById('widgetUploadPanel').classList.remove('show');
+        }
+      });
+    }
+
+    function toggleWidget() {
+      const trigger = document.getElementById('widgetTrigger');
+      const container = document.getElementById('widgetContainer');
+      
+      widgetOpen = !widgetOpen;
+      
+      if (widgetOpen) {
+        container.classList.add('show');
+        trigger.classList.add('active');
+        trigger.innerHTML = '<span class="trigger-icon">×</span>';
+        scrollWidgetToBottom();
+      } else {
+        container.classList.remove('show');
+        trigger.classList.remove('active');
+        trigger.innerHTML = '<span class="trigger-icon">💬</span>';
+        document.getElementById('widgetUploadPanel').classList.remove('show');
+      }
+    }
+
+    function closeWidget() {
+      widgetOpen = false;
+      document.getElementById('widgetContainer').classList.remove('show');
+      document.getElementById('widgetTrigger').classList.remove('active');
+      document.getElementById('widgetTrigger').innerHTML = '<span class="trigger-icon">💬</span>';
+      document.getElementById('widgetUploadPanel').classList.remove('show');
+    }
+
+    function widgetSendMessage() {
+      const input = document.getElementById('widgetTextInput');
+      const message = input.value.trim();
+      
+      if (!message) return;
+
+      // Add user message
+      widgetAddMessage(message, 'user');
+      input.value = '';
+
+      // Show typing indicator
+      widgetShowTyping();
+
+      // Simulate API call (replace with actual API call)
+      setTimeout(() => {
+        widgetHideTyping();
+        
+        // Mock response based on message content
+        let response = "I understand your question. ";
+        if (message.toLowerCase().includes('upload') || message.toLowerCase().includes('document')) {
+          response += "You can upload PDF documents using the 📎 button below. I'll analyze them and add the information to my knowledge base.";
+        } else if (message.toLowerCase().includes('url') || message.toLowerCase().includes('website')) {
+          response += "You can add URLs to expand my knowledge base. Just use the 🔗 option to add web content for me to learn from.";
+        } else if (message.toLowerCase().includes('help') || message.toLowerCase().includes('support')) {
+          response += "I'm here to help with IT support questions. You can ask me about technical issues, upload documents for analysis, or add URLs to expand my knowledge base.";
+        } else {
+          response += "Let me help you with that. Feel free to ask follow-up questions or upload relevant documents for more detailed assistance.";
+        }
+        
+        widgetAddMessage(response, 'bot');
+      }, 1500);
+    }
+
+    function widgetAddMessage(content, type) {
+      const messagesContainer = document.getElementById('widgetMessages');
+      const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `widget-message ${type}`;
+      
+      messageDiv.innerHTML = `
+        <div class="widget-message-content">
+          ${content}
+          <span class="widget-message-time">${time}</span>
+        </div>
+      `;
+      
+      messagesContainer.appendChild(messageDiv);
+      scrollWidgetToBottom();
+    }
+
+    function widgetShowTyping() {
+      const messagesContainer = document.getElementById('widgetMessages');
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'widget-message bot widget-typing-indicator';
+      typingDiv.innerHTML = `
+        <div class="widget-message-content">
+          <div class="widget-typing">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      `;
+      messagesContainer.appendChild(typingDiv);
+      scrollWidgetToBottom();
+    }
+
+    function widgetHideTyping() {
+      const typingIndicator = document.querySelector('.widget-typing-indicator');
+      if (typingIndicator) {
+        typingIndicator.remove();
+      }
+    }
+
+    function scrollWidgetToBottom() {
+      const messagesContainer = document.getElementById('widgetMessages');
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function widgetToggleUploads() {
+      const panel = document.getElementById('widgetUploadPanel');
+      panel.classList.toggle('show');
+    }
+
+    function widgetHandleFileUpload(files) {
+      const validFiles = Array.from(files).filter(file => file.type === 'application/pdf');
+      
+      if (validFiles.length === 0) {
+        widgetAddMessage("Please select PDF files only.", 'bot');
+        return;
+      }
+
+      validFiles.forEach(file => {
+        if (file.size > widgetConfig.maxFileSize * 1024 * 1024) {
+          widgetAddMessage(`File ${file.name} is too large. Maximum size is ${widgetConfig.maxFileSize}MB.`, 'bot');
+          return;
+        }
+        
+        widgetAddMessage(`📄 Processing ${file.name}...`, 'bot');
+        
+        // Simulate file upload
+        setTimeout(() => {
+          widgetAddMessage(`✅ ${file.name} has been uploaded and processed successfully! The knowledge has been added to my database.`, 'bot');
+        }, 2000);
+      });
+    }
+
+    function widgetAddUrl() {
+      const urlInput = document.getElementById('widgetUrlInput');
+      const url = urlInput.value.trim();
+      
+      if (!url) {
+        widgetAddMessage("Please enter a valid URL.", 'bot');
+        return;
+      }
+
+      try {
+        new URL(url);
+      } catch (e) {
+        widgetAddMessage("Please enter a valid URL format.", 'bot');
+        return;
+      }
+
+      urlInput.value = '';
+      widgetAddMessage(`🔗 Processing URL: ${url}...`, 'bot');
+      
+      // Simulate URL processing
+      setTimeout(() => {
+        widgetAddMessage(`✅ Content from ${new URL(url).hostname} has been successfully added to my knowledge base!`, 'bot');
+      }, 2500);
+    }
+
+    function initializeWidgetDragDrop() {
+      const dropZone = document.querySelector('.widget-file-drop');
+      
+      dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.add('dragover');
+      });
+      
+      dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.remove('dragover');
+      });
+      
+      dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.remove('dragover');
+        
+        const files = Array.from(e.dataTransfer.files).filter(file => 
+          file.type === 'application/pdf'
+        );
+        
+        if (files.length > 0) {
+          widgetHandleFileUpload(files);
+        } else {
+          widgetAddMessage("Please drop only PDF files.", 'bot');
+        }
+      });
+    }
+
+    // Demo page functions
+    function copyEmbedCode() {
+      const embedCode = `<!-- IT Helpdesk Widget -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+  window.HelpdeskWidget = {
+    apiUrl: 'https://your-domain.com',
+    theme: 'dark',
+    position: 'bottom-right',
+    greeting: 'Hi! How can I help you today?'
+  };
+<\/script>
+<script src="https://your-domain.com/static/widget.js"></script>
+<!-- End Widget -->`;
+
+      navigator.clipboard.writeText(embedCode).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = '✅ Copied!';
+        btn.style.background = '#28a745';
+        
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = '#007bff';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html> 

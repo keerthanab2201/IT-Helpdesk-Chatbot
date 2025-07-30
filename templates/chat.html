@@ -10,35 +10,360 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
   
-  <!-- Font Awesome & Custom CSS -->
+  <!-- Font Awesome & Icons -->
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 
   <style>
-    .msg_card_body {
-      overflow-y: auto;
-      height: 400px;
+    body, html {
+      height: 100%;
+      margin: 0;
+      background-color: #121212;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .chat {
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    .card {
+      height: 100%;
+      border-radius: 15px;
+      background-color: #1e1e1e;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-bottom: 1px solid #444;
+      color: white;
+      border-radius: 15px 15px 0 0;
+    }
+
+    .msg_head {
       padding: 15px;
     }
-    .msg_container {
-      margin-bottom: 15px;
+
+    .user_img, .user_img_msg {
+      height: 40px;
+      width: 40px;
+      border: 2px solid white;
     }
-    .user_img_msg {
+
+    .img_cont {
+      position: relative;
       height: 40px;
       width: 40px;
     }
+
+    .online_icon {
+      position: absolute;
+      height: 10px;
+      width: 10px;
+      background-color: #4cd137;
+      border-radius: 50%;
+      bottom: 0;
+      right: 0;
+      border: 2px solid white;
+    }
+
+    .user_info {
+      margin-left: 15px;
+      align-self: center;
+    }
+
+    .msg_card_body {
+      overflow-y: auto;
+      background-color: #181818;
+      padding: 20px;
+      height: 400px;
+    }
+
+    .msg_cotainer {
+      background-color: #007bff;
+      color: white;
+      padding: 12px;
+      border-radius: 15px 15px 15px 5px;
+      max-width: 75%;
+      position: relative;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .msg_cotainer_send {
+      background: linear-gradient(135deg, #00b09b, #96c93d);
+      color: white;
+      padding: 12px;
+      border-radius: 15px 15px 5px 15px;
+      max-width: 75%;
+      position: relative;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .msg_time, .msg_time_send {
+      font-size: 10px;
+      color: rgba(255,255,255,0.7);
+      margin-top: 5px;
+      display: block;
+    }
+
+    .img_cont_msg {
+      height: 40px;
+      width: 40px;
+      margin-left: 10px;
+    }
+
     .bot_img_msg {
       height: 40px;
       width: 40px;
       background-color: #2c2f33;
       padding: 5px;
       border-radius: 50%;
+      border: 2px solid white;
     }
-    .msg_time {
+
+    /* Enhanced Input Area */
+    .enhanced-input-area {
+      background-color: #2c2f33;
+      border-radius: 0 0 15px 15px;
+      padding: 15px;
+    }
+
+    .input-container {
+      background-color: #404040;
+      border-radius: 25px;
+      padding: 8px 15px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .type_msg {
+      background: transparent;
+      border: none;
+      color: white;
+      flex: 1;
+      padding: 8px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .type_msg::placeholder {
+      color: #aaa;
+    }
+
+    .input-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      color: #aaa;
+      padding: 8px;
+      border-radius: 50%;
+      transition: all 0.3s;
+      cursor: pointer;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .action-btn:hover {
+      background-color: #555;
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .send_btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .send_btn:hover {
+      background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    }
+
+    /* Upload Features */
+    .upload-options {
+      background-color: #333;
+      border-radius: 15px;
+      margin-bottom: 10px;
+      padding: 15px;
+      display: none;
+    }
+
+    .upload-options.show {
       display: block;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .upload-section {
+      margin-bottom: 15px;
+    }
+
+    .upload-section h6 {
+      color: #667eea;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .file-drop-zone {
+      border: 2px dashed #555;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      color: #aaa;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 10px;
+    }
+
+    .file-drop-zone:hover, .file-drop-zone.dragover {
+      border-color: #667eea;
+      background-color: rgba(102, 126, 234, 0.1);
+      color: white;
+    }
+
+    .url-input-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .url-input {
+      flex: 1;
+      background-color: #404040;
+      border: 1px solid #555;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: white;
+      font-size: 14px;
+    }
+
+    .url-input::placeholder {
+      color: #aaa;
+    }
+
+    .url-add-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .url-add-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    /* Knowledge Status */
+    .knowledge-status {
+      background-color: #2c2f33;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      color: #aaa;
+      font-size: 12px;
+    }
+
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+    }
+
+    .status-badge {
+      padding: 2px 8px;
+      border-radius: 12px;
       font-size: 10px;
-      color: #6c757d;
-      margin-top: 5px;
+      font-weight: 600;
+    }
+
+    .status-processing { background-color: #ffc107; color: #000; }
+    .status-success { background-color: #28a745; color: white; }
+    .status-error { background-color: #dc3545; color: white; }
+
+    /* Typing indicator */
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      padding: 8px 0;
+    }
+
+    .typing-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #667eea;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dots span:nth-child(1) { animation-delay: 0s; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-10px); opacity: 1; }
+    }
+
+    /* Hidden file input */
+    .hidden-file-input {
+      display: none;
+    }
+
+    /* Upload progress */
+    .upload-progress {
+      margin-top: 10px;
+      display: none;
+    }
+
+    .progress {
+      height: 4px;
+      background-color: #404040;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: width 0.3s ease;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .msg_cotainer, .msg_cotainer_send {
+        max-width: 85%;
+      }
+      
+      .upload-options {
+        padding: 10px;
+      }
+      
+      .url-input-group {
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .url-input {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -49,33 +374,106 @@
       <div class="col-md-8 col-xl-6 chat">
         <div class="card">
           <div class="card-header msg_head">
-            <div class="d-flex bd-highlight">
-              <div class="img_cont">
-                <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
-                     class="rounded-circle user_img" style="background-color: #2c2f33; padding: 5px;">
-                <span class="online_icon"></span>
+            <div class="d-flex bd-highlight justify-content-between align-items-center">
+              <div class="d-flex bd-highlight">
+                <div class="img_cont">
+                  <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
+                       class="rounded-circle user_img" style="background-color: #2c2f33; padding: 5px;">
+                  <span class="online_icon"></span>
+                </div>
+                <div class="user_info">
+                  <span>IT Helpdesk Assistant</span>
+                  <p style="margin: 0; font-size: 12px; opacity: 0.8;">Ask me anything!</p>
+                </div>
               </div>
-              <div class="user_info">
-                <span>IT Helpdesk Assistant</span>
-                <p>Ask me anything!</p>
+              <div>
+                <button class="btn btn-sm btn-outline-light" onclick="toggleKnowledgeManager()">
+                  <i class="bi bi-gear"></i>
+                </button>
               </div>
             </div>
           </div>
 
           <div id="messageFormeight" class="card-body msg_card_body">
-            <!-- Messages will appear here -->
+            <!-- Welcome message -->
+            <div class="d-flex justify-content-start mb-4">
+              <div class="img_cont_msg">
+                <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
+                     class="rounded-circle bot_img_msg">
+              </div>
+              <div class="msg_cotainer">
+                Welcome! I'm your IT Helpdesk Assistant. You can:
+                <br>• Ask me questions
+                <br>• Upload documents for me to learn from
+                <br>• Add URLs for knowledge expansion
+                <br><br>How can I help you today?
+                <span class="msg_time">Just now</span>
+              </div>
+            </div>
           </div>
 
-          <div class="card-footer">
-            <form id="messageArea" class="input-group">
-              <input type="text" id="text" name="msg" placeholder="Type your message..." 
-                     class="form-control type_msg" autocomplete="off" required>
-              <div class="input-group-append">
-                <button type="submit" id="send" class="input-group-text send_btn">
-                  <i class="fas fa-location-arrow"></i>
+          <div class="enhanced-input-area">
+            <!-- Knowledge Status Panel -->
+            <div id="knowledgeStatus" class="knowledge-status" style="display: none;">
+              <div style="display: flex; justify-content: between align-items-center; margin-bottom: 8px;">
+                <strong style="color: #667eea;">Knowledge Base Status</strong>
+                <button class="btn btn-sm" onclick="refreshKnowledgeStatus()" style="color: #aaa; padding: 0;">
+                  <i class="bi bi-arrow-clockwise"></i>
                 </button>
               </div>
-            </form>
+              <div id="knowledgeItems">
+                <!-- Knowledge items will be populated here -->
+              </div>
+            </div>
+
+            <!-- Upload Options Panel -->
+            <div id="uploadOptions" class="upload-options">
+              <!-- Document Upload Section -->
+              <div class="upload-section">
+                <h6><i class="bi bi-file-earmark-pdf"></i> Upload Documents</h6>
+                <div class="file-drop-zone" onclick="document.getElementById('fileInput').click()">
+                  <i class="bi bi-cloud-upload" style="font-size: 24px; display: block; margin-bottom: 8px;"></i>
+                  <div>Drop PDF files here or click to browse</div>
+                  <small>Supported: PDF files up to 10MB</small>
+                </div>
+                <input type="file" id="fileInput" class="hidden-file-input" multiple accept=".pdf">
+                <div id="uploadProgress" class="upload-progress">
+                  <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                  </div>
+                  <small id="uploadStatus" style="color: #aaa; margin-top: 5px; display: block;"></small>
+                </div>
+              </div>
+
+              <!-- URL Addition Section -->
+              <div class="upload-section">
+                <h6><i class="bi bi-link-45deg"></i> Add URL</h6>
+                <div class="url-input-group">
+                  <input type="url" id="urlInput" class="url-input" placeholder="Enter URL to add to knowledge base...">
+                  <button class="url-add-btn" onclick="addUrl()">
+                    <i class="bi bi-plus"></i> Add
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Main Input Container -->
+            <div class="input-container">
+              <input type="text" id="text" name="msg" placeholder="Type your message..." 
+                     class="type_msg" autocomplete="off" required>
+              
+              <div class="input-actions">
+                <button type="button" class="action-btn" onclick="toggleUploadOptions()" title="Upload documents or add URLs">
+                  <i class="bi bi-paperclip"></i>
+                </button>
+                <button type="button" class="action-btn" onclick="toggleKnowledgeManager()" title="Manage knowledge base">
+                  <i class="bi bi-book"></i>
+                </button>
+                <button type="submit" id="send" class="action-btn send_btn" title="Send message">
+                  <i class="bi bi-send"></i>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -83,102 +481,373 @@
   </div>
 
   <script>
+    let sessionId = Math.random().toString(36).substr(2, 9);
+    let knowledgeItems = [];
+
     $(document).ready(function () {
-      // Scroll to bottom of chat on load
       $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
       
-      $("#messageArea").on("submit", function (event) {
-        event.preventDefault();
-        
-        const date = new Date();
-        const hour = date.getHours();
-        const minute = date.getMinutes();
-        const str_time = hour + ":" + (minute < 10 ? "0" + minute : minute);
-        const rawText = $("#text").val().trim();
-        
-        if (!rawText) return;
+      // Initialize drag and drop
+      initializeDragAndDrop();
+      
+      // Load initial knowledge status
+      refreshKnowledgeStatus();
+      
+      // Handle message submission
+      $("#text").on("keypress", function(e) {
+        if (e.which === 13) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      
+      $("#send").on("click", function(e) {
+        e.preventDefault();
+        sendMessage();
+      });
 
-        // Add user message to chat (keeping original user icon)
-        const userHtml = `
-          <div class="d-flex justify-content-end mb-4">
-            <div class="msg_cotainer_send">
-              ${rawText}
-              <span class="msg_time_send">${str_time}</span>
+      // Handle file input change
+      $("#fileInput").on("change", function() {
+        handleFileUpload(this.files);
+      });
+    });
+
+    function sendMessage() {
+      const date = new Date();
+      const hour = date.getHours();
+      const minute = date.getMinutes();
+      const str_time = hour + ":" + (minute < 10 ? "0" + minute : minute);
+      const rawText = $("#text").val().trim();
+      
+      if (!rawText) return;
+
+      // Add user message to chat
+      const userHtml = `
+        <div class="d-flex justify-content-end mb-4">
+          <div class="msg_cotainer_send">
+            ${rawText}
+            <span class="msg_time_send">${str_time}</span>
+          </div>
+          <div class="img_cont_msg">
+            <img src="https://cdn.vectorstock.com/i/1000v/26/00/man-working-on-computer-icon-vector-15262600.jpg"
+                 class="rounded-circle user_img_msg">
+          </div>
+        </div>`;
+      
+      $("#messageFormeight").append(userHtml);
+      $("#text").val("");
+      $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+      
+      // Send to backend
+      $.ajax({
+        url: "/get",
+        type: "POST",
+        data: { 
+          msg: rawText,
+          session_id: sessionId
+        },
+        beforeSend: function() {
+          // Show typing indicator
+          $("#messageFormeight").append(`
+            <div class="d-flex justify-content-start mb-4 typing-indicator">
+              <div class="img_cont_msg">
+                <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
+                     class="rounded-circle bot_img_msg">
+              </div>
+              <div class="msg_cotainer">
+                <div class="typing-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
             </div>
+          `);
+          $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+        }
+      })
+      .done(function(data) {
+        // Remove typing indicator
+        $(".typing-indicator").remove();
+        
+        // Add bot response
+        const botHtml = `
+          <div class="d-flex justify-content-start mb-4">
             <div class="img_cont_msg">
-              <img src="https://cdn.vectorstock.com/i/1000v/26/00/man-working-on-computer-icon-vector-15262600.jpg"
-                   class="rounded-circle user_img_msg">
+              <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
+                   class="rounded-circle bot_img_msg">
+            </div>
+            <div class="msg_cotainer">
+              ${data}
+              <span class="msg_time">${str_time}</span>
             </div>
           </div>`;
         
-        $("#messageFormeight").append(userHtml);
-        $("#text").val("");
+        $("#messageFormeight").append(botHtml);
         $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+      })
+      .fail(function(xhr, status, error) {
+        console.error("Error:", error);
+        $(".typing-indicator").remove();
         
-        // Send to backend
-        $.ajax({
-          url: "/get",
-          type: "POST",
-          data: { msg: rawText },
-          beforeSend: function() {
-            // Show typing indicator with robot icon
-            $("#messageFormeight").append(`
-              <div class="d-flex justify-content-start mb-4">
-                <div class="img_cont_msg">
-                  <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
-                       class="rounded-circle bot_img_msg">
-                </div>
-                <div class="msg_cotainer">
-                  <div class="typing-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </div>
-                </div>
-              </div>
-            `);
-          }
-        })
-        .done(function(data) {
-          // Remove typing indicator
-          $(".typing-dots").parent().parent().remove();
-          
-          // Add bot response with robot icon
-          const botHtml = `
-            <div class="d-flex justify-content-start mb-4">
-              <div class="img_cont_msg">
-                <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
-                     class="rounded-circle bot_img_msg">
-              </div>
-              <div class="msg_cotainer">
-                ${data}
-                <span class="msg_time">${str_time}</span>
-              </div>
-            </div>`;
-          
-          $("#messageFormeight").append(botHtml);
-          $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
-        })
-        .fail(function(xhr, status, error) {
-          console.error("Error:", error);
-          $(".typing-dots").parent().parent().remove();
-          
-          const errorHtml = `
-            <div class="d-flex justify-content-start mb-4">
-              <div class="img_cont_msg">
-                <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
-                     class="rounded-circle bot_img_msg">
-              </div>
-              <div class="msg_cotainer">
-                Sorry, I encountered an error. Please try again.
-                <span class="msg_time">${str_time}</span>
-              </div>
-            </div>`;
-          
-          $("#messageFormeight").append(errorHtml);
-          $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
-        });
+        const errorHtml = `
+          <div class="d-flex justify-content-start mb-4">
+            <div class="img_cont_msg">
+              <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
+                   class="rounded-circle bot_img_msg">
+            </div>
+            <div class="msg_cotainer">
+              Sorry, I encountered an error. Please try again.
+              <span class="msg_time">${str_time}</span>
+            </div>
+          </div>`;
+        
+        $("#messageFormeight").append(errorHtml);
+        $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
       });
+    }
+
+    function toggleUploadOptions() {
+      $("#uploadOptions").toggleClass("show");
+      if ($("#uploadOptions").hasClass("show")) {
+        $("#knowledgeStatus").hide();
+      }
+    }
+
+    function toggleKnowledgeManager() {
+      $("#knowledgeStatus").toggle();
+      if ($("#knowledgeStatus").is(":visible")) {
+        $("#uploadOptions").removeClass("show");
+        refreshKnowledgeStatus();
+      }
+    }
+
+    function initializeDragAndDrop() {
+      const dropZone = $(".file-drop-zone");
+      
+      dropZone.on("dragover", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).addClass("dragover");
+      });
+      
+      dropZone.on("dragleave", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).removeClass("dragover");
+      });
+      
+      dropZone.on("drop", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).removeClass("dragover");
+        
+        const files = Array.from(e.originalEvent.dataTransfer.files).filter(file => 
+          file.type === 'application/pdf'
+        );
+        
+        if (files.length > 0) {
+          handleFileUpload(files);
+        } else {
+          showMessage("Please drop only PDF files.", "error");
+        }
+      });
+    }
+
+    function handleFileUpload(files) {
+      const validFiles = Array.from(files).filter(file => file.type === 'application/pdf');
+      
+      if (validFiles.length === 0) {
+        showMessage("Please select PDF files only.", "error");
+        return;
+      }
+
+      validFiles.forEach(file => {
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+          showMessage(`File ${file.name} is too large. Maximum size is 10MB.`, "error");
+          return;
+        }
+        
+        uploadFile(file);
+      });
+    }
+
+    function uploadFile(file) {
+      const formData = new FormData();
+      formData.append('pdf_file', file);
+      
+      // Show upload progress
+      $("#uploadProgress").show();
+      $("#uploadStatus").text(`Uploading ${file.name}...`);
+      
+      // Add to knowledge items with processing status
+      addKnowledgeItem(file.name, 'PDF', 'processing');
+      
+      $.ajax({
+        url: "/upload_document",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        xhr: function() {
+          const xhr = new window.XMLHttpRequest();
+          xhr.upload.addEventListener("progress", function(evt) {
+            if (evt.lengthComputable) {
+              const percentComplete = (evt.loaded / evt.total) * 100;
+              $(".progress-bar").css("width", percentComplete + "%");
+            }
+          });
+          return xhr;
+        }
+      })
+      .done(function(data) {
+        $("#uploadProgress").hide();
+        $(".progress-bar").css("width", "0%");
+        updateKnowledgeItem(file.name, 'success');
+        showMessage(`${file.name} uploaded successfully!`, "success");
+        refreshKnowledgeStatus();
+      })
+      .fail(function(xhr) {
+        $("#uploadProgress").hide();
+        $(".progress-bar").css("width", "0%");
+        updateKnowledgeItem(file.name, 'error');
+        showMessage(`Error uploading ${file.name}: ${xhr.responseText}`, "error");
+      });
+    }
+
+    function addUrl() {
+      const url = $("#urlInput").val().trim();
+      if (!url) {
+        showMessage("Please enter a valid URL.", "error");
+        return;
+      }
+
+      // Basic URL validation
+      try {
+        new URL(url);
+      } catch (e) {
+        showMessage("Please enter a valid URL.", "error");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('url', url);
+      formData.append('title', new URL(url).hostname);
+      
+      // Add to knowledge items with processing status
+      addKnowledgeItem(new URL(url).hostname, 'URL', 'processing');
+      
+      $.ajax({
+        url: "/add_url",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false
+      })
+      .done(function(data) {
+        $("#urlInput").val("");
+        updateKnowledgeItem(new URL(url).hostname, 'success');
+        showMessage("URL added successfully!", "success");
+        refreshKnowledgeStatus();
+      })
+      .fail(function(xhr) {
+        updateKnowledgeItem(new URL(url).hostname, 'error');
+        showMessage("Error adding URL: " + xhr.responseText, "error");
+      });
+    }
+
+    function addKnowledgeItem(name, type, status) {
+      const item = { name, type, status, added_at: new Date().toISOString() };
+      knowledgeItems.unshift(item);
+      updateKnowledgeDisplay();
+    }
+
+    function updateKnowledgeItem(name, status) {
+      const item = knowledgeItems.find(item => item.name === name);
+      if (item) {
+        item.status = status;
+        updateKnowledgeDisplay();
+      }
+    }
+
+    function updateKnowledgeDisplay() {
+      const container = $("#knowledgeItems");
+      container.empty();
+      
+      if (knowledgeItems.length === 0) {
+        container.append('<div style="color: #666; text-align: center; padding: 10px;">No knowledge items yet</div>');
+        return;
+      }
+      
+      knowledgeItems.slice(0, 5).forEach(item => {
+        const icon = item.type === 'PDF' ? 'bi-file-earmark-pdf' : 'bi-link-45deg';
+        const statusClass = `status-${item.status === 'processed' ? 'success' : item.status}`;
+        const statusText = item.status === 'processed' ? 'ready' : item.status;
+        
+        container.append(`
+          <div class="status-item">
+            <div>
+              <i class="bi ${icon}"></i> ${item.name}
+            </div>
+            <span class="status-badge ${statusClass}">${statusText}</span>
+          </div>
+        `);
+      });
+      
+      if (knowledgeItems.length > 5) {
+        container.append(`<div style="text-align: center; color: #666; font-size: 11px; margin-top: 8px;">... and ${knowledgeItems.length - 5} more items</div>`);
+      }
+    }
+
+    async function refreshKnowledgeStatus() {
+      try {
+        const response = await fetch('/api/knowledge-base');
+        const items = await response.json();
+        knowledgeItems = items.map(item => ({
+          name: item.name,
+          type: item.type,
+          status: item.status,
+          added_at: item.added_at
+        }));
+        updateKnowledgeDisplay();
+      } catch (error) {
+        console.error('Error refreshing knowledge status:', error);
+      }
+    }
+
+    function showMessage(message, type) {
+      const date = new Date();
+      const hour = date.getHours();
+      const minute = date.getMinutes();
+      const str_time = hour + ":" + (minute < 10 ? "0" + minute : minute);
+      
+      const alertClass = type === 'success' ? 'msg_cotainer' : 
+                        type === 'error' ? 'msg_cotainer' : 'msg_cotainer';
+      const bgColor = type === 'success' ? '#28a745' : 
+                     type === 'error' ? '#dc3545' : '#6c757d';
+      
+      const messageHtml = `
+        <div class="d-flex justify-content-start mb-4">
+          <div class="img_cont_msg">
+            <img src="https://cdn-icons-png.flaticon.com/512/1998/1998614.png"
+                 class="rounded-circle bot_img_msg">
+          </div>
+          <div class="${alertClass}" style="background-color: ${bgColor};">
+            ${message}
+            <span class="msg_time">${str_time}</span>
+          </div>
+        </div>`;
+      
+      $("#messageFormeight").append(messageHtml);
+      $("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+    }
+
+    // Close upload options when clicking outside
+    $(document).on("click", function(e) {
+      if (!$(e.target).closest(".enhanced-input-area").length) {
+        $("#uploadOptions").removeClass("show");
+        $("#knowledgeStatus").hide();
+      }
     });
   </script>
 </body>
