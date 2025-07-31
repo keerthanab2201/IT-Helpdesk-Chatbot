@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 
-  <style>
+<style>
     body, html {
       height: 100%;
       margin: 0;
@@ -365,10 +365,38 @@
         width: 100%;
       }
     }
-  </style>
-</head>
 
-<body>
+    /* Widget mode adjustments */
+    /* Widget mode adjustments */
+body.widget-mode, html.widget-mode {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.widget-mode .container-fluid {
+  padding: 0;
+  height: 100vh;
+}
+
+.widget-mode .chat {
+  margin: 0;
+  height: 100%;
+}
+
+.widget-mode .card {
+  height: 100vh;
+  border-radius: 0;
+  margin: 0;
+}
+
+.widget-mode .msg_card_body {
+  height: calc(100vh - 200px);
+}
+</style>
+
+<body {% if is_widget %} class="widget-mode"{% endif %}></body>
   <div class="container-fluid h-100">
     <div class="row justify-content-center h-100">
       <div class="col-md-8 col-xl-6 chat">

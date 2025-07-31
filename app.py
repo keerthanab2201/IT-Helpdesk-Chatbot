@@ -1,6 +1,6 @@
 # Enhanced app.py with user upload features
 
-from flask import Flask, render_template, request, redirect, url_for, g, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, g, flash, jsonify, send_from_directory
 from dotenv import load_dotenv
 import os
 import requests
@@ -148,15 +148,21 @@ try:
 except Exception as e:
     print(f"Error initializing Pinecone: {e}")
 
-# Home route - Enhanced chat interface
+# Home route - Demo website with widget embedding interface
 @app.route("/")
 def home():
-    return render_template("enhanced_chat.html")
+    return render_template("demo.html")
 
-# Widget route
-@app.route("/widget")
-def widget():
-    return render_template("chat_widget.html")
+@app.route("/chat")
+def chat():
+    # Check if it's being loaded as a widget
+    is_widget = request.args.get('widget') == 'true'
+    return render_template("enhanced_chat.html", is_widget=is_widget)
+
+# Add this route to serve the widget JavaScript
+@app.route("/static/widget.js")
+def serve_widget():
+    return send_from_directory('static', 'widget.js', mimetype='application/javascript')
 
 # Admin Panel
 @app.route("/admin")
@@ -671,6 +677,10 @@ def admin_add_url():
         print("Error processing URL:", e)
         return redirect(url_for("admin"))
 
+@app.route("/demo")
+def demo():
+    return render_template("demo.html")
+
 # Additional API endpoints for the enhanced features
 @app.route("/api/add-api-key", methods=["POST"])
 def add_api_key():
@@ -771,6 +781,14 @@ def end_session():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# Add CORS headers
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
