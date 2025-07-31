@@ -17,6 +17,8 @@ import urllib.request
 import urllib.parse
 import secrets
 import json
+import time
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -149,9 +151,16 @@ except Exception as e:
     print(f"Error initializing Pinecone: {e}")
 
 # Home route - Demo website with widget embedding interface
+# Update your demo route to include version parameter
 @app.route("/")
 def home():
-    return render_template("demo.html")
+    # Add version parameter for cache busting
+    version = str(int(time.time()))
+    return render_template("demo.html", widget_version=version)
+
+@app.route("/debug")
+def debug():
+    return render_template("debug.html")
 
 @app.route("/chat")
 def chat():
@@ -161,9 +170,19 @@ def chat():
 
 # Add this route to serve the widget JavaScript
 @app.route("/static/widget.js")
-def serve_widget():
-    return send_from_directory('static', 'widget.js', mimetype='application/javascript')
+def serve_widget_with_cache_bust():
+    """Serve widget.js with cache busting headers"""
+    response = send_from_directory('static', 'widget.js', mimetype='application/javascript')
 
+# Add cache-busting headers
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+# Add timestamp to ensure freshness
+    response.headers['Last-Modified'] = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+    
+    return response
+  
 # Admin Panel
 @app.route("/admin")
 def admin():

@@ -84,11 +84,61 @@
         .debug-button:hover {
             background: #0056b3;
         }
+
+        .feature-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px; 
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            border-left: 4px solid #28a745;
+        }
+
+        .feature-card.blue { border-left-color: #007bff; }
+        .feature-card.yellow { border-left-color: #ffc107; }
+        .feature-card.red { border-left-color: #dc3545; }
+
+        .widget-status {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-loading { background: #ffc107; }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🚀 IT Helpdesk Widget Integration Example</h1>
+        
+        <div class="widget-status">
+            <h3>Widget Status</h3>
+            <p id="widgetStatusText">
+                <span id="statusIndicator" class="status-indicator status-loading"></span>
+                <span id="statusMessage">Loading widget...</span>
+            </p>
+            <p id="loadInfo" style="font-size: 12px; color: #666; margin: 0;">
+                Loading script with timestamp to bypass cache...
+            </p>
+        </div>
         
         <div class="content">
             <h2>Welcome to Our Website!</h2>
@@ -101,6 +151,7 @@
                 <li>🔗 <strong>URL Integration:</strong> Add web pages to the chatbot's knowledge base</li>
                 <li>📱 <strong>Responsive Design:</strong> Works perfectly on desktop and mobile devices</li>
                 <li>🎨 <strong>Customizable:</strong> Themes, colors, and positioning options</li>
+                <li>⚡ <strong>Direct DOM Integration:</strong> No iframes, fast loading, seamless experience</li>
             </ul>
         </div>
         
@@ -123,7 +174,7 @@
     secondaryColor: '#764ba2'
   };
 &lt;/script&gt;
-&lt;script src="http://localhost:5000/static/widget.js"&gt;&lt;/script&gt;
+&lt;script src="http://localhost:5000/static/widget.js?v=" + Date.now()&gt;&lt;/script&gt;
 &lt;!-- End Widget --&gt;
             </div>
         </div>
@@ -134,21 +185,27 @@
                 <li>Ask IT support questions</li>
                 <li>Upload PDF documents</li>
                 <li>Add URLs to expand knowledge</li>
+                <li>Experience the full chat interface directly embedded</li>
             </ul>
         </div>
 
-        <!-- Debug Panel -->
+        <!-- Enhanced Debug Panel -->
         <div class="debug-panel">
-            <h4>🐛 Debug Panel</h4>
+            <h4>🐛 Widget Debug Panel</h4>
             <div id="debugOutput">
-                <p><strong>Widget Status:</strong> <span id="widgetStatus">Initializing...</span></p>
+                <p><strong>Widget Loaded:</strong> <span id="widgetLoaded">❌ No</span></p>
+                <p><strong>Button Found:</strong> <span id="buttonFound">❌ No</span></p>
+                <p><strong>API Available:</strong> <span id="apiAvailable">❌ No</span></p>
+                <p><strong>Script URL:</strong> <span id="scriptUrl">Generating...</span></p>
                 <p><strong>Console:</strong> <span id="consoleOutput">Check browser console for detailed logs</span></p>
             </div>
             <div>
                 <button class="debug-button" onclick="testWidget()">Test Widget Toggle</button>
+                <button class="debug-button" onclick="testSendMessage()">Test Send Message</button>
                 <button class="debug-button" onclick="checkWidgetElements()">Check Elements</button>
-                <button class="debug-button" onclick="reinitWidget()">Reinit Widget</button>
+                <button class="debug-button" onclick="reloadWidget()">Reload Widget</button>
                 <button class="debug-button" onclick="clearConsole()">Clear Console</button>
+                <button class="debug-button" onclick="testMaximize()">Test Maximize</button>
             </div>
         </div>
         
@@ -173,22 +230,22 @@ window.HelpdeskWidget = {
             <h3>📋 Demo Features</h3>
             <p>This demo page includes the actual working widget connected to your Flask backend. You can test all features:</p>
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;">
-                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
+            <div class="feature-grid">
+                <div class="feature-card">
                     <h4>💬 Chat Interface</h4>
-                    <p>Ask questions and get AI-powered responses from your IT helpdesk assistant.</p>
+                    <p>Ask questions and get AI-powered responses from your IT helpdesk assistant. Now with direct DOM integration for faster performance.</p>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
+                <div class="feature-card blue">
                     <h4>📎 File Upload</h4>
-                    <p>Upload PDF documents to expand the chatbot's knowledge base instantly.</p>
+                    <p>Upload PDF documents to expand the chatbot's knowledge base instantly. Drag and drop support included.</p>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                <div class="feature-card yellow">
                     <h4>🔗 URL Integration</h4>
-                    <p>Add web pages to the knowledge base by simply providing URLs.</p>
+                    <p>Add web pages to the knowledge base by simply providing URLs. Real-time processing and feedback.</p>
                 </div>
-                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #dc3545;">
+                <div class="feature-card red">
                     <h4>📱 Responsive Design</h4>
-                    <p>The widget automatically adapts to different screen sizes and devices.</p>
+                    <p>The widget automatically adapts to different screen sizes and devices. Maximizable for full-screen experience.</p>
                 </div>
             </div>
         </div>
@@ -202,24 +259,41 @@ window.HelpdeskWidget = {
                 <li><strong>Test the features:</strong> Ask questions, upload files, add URLs</li>
                 <li><strong>Integrate:</strong> Copy the embed code to use on other websites</li>
             </ol>
+            
+            <h4>🔧 Technical Notes:</h4>
+            <ul>
+                <li><strong>Direct DOM Integration:</strong> No iframes used - the chat interface is directly embedded for better performance</li>
+                <li><strong>Session Management:</strong> Each widget instance gets a unique session ID for proper conversation tracking</li>
+                <li><strong>Real-time Updates:</strong> File uploads and URL additions provide immediate feedback</li>
+                <li><strong>Responsive Design:</strong> Automatically adapts to mobile devices and different screen sizes</li>
+                <li><strong>Customizable:</strong> Easy to theme and customize for your brand</li>
+            </ul>
         </div>
         
         <div style="text-align: center; margin: 40px 0; padding: 30px; background: #f8f9fa; border-radius: 10px;">
-            <h3>🎉 Widget Demo Ready!</h3>
-            <p style="font-size: 18px; color: #666;">The chatbot widget is now active on this page. Look for the floating chat button!</p>
-            <p style="color: #888; font-size: 14px;">This page serves as both a demo and integration example for your IT Helpdesk chatbot.</p>
+            <h3>🎉 Enhanced Widget Demo Ready!</h3>
+            <p style="font-size: 18px; color: #666;">The chatbot widget is now active on this page with direct DOM integration. Look for the floating chat button!</p>
+            <p style="color: #888; font-size: 14px;">This version provides faster loading, better performance, and seamless integration without iframes.</p>
         </div>
     </div>
 
-    <!-- Debug Functions -->
+    <!-- Enhanced Debug Functions -->
     <script>
         let debugLog = [];
 
         // Override console.log to capture debug messages
         const originalLog = console.log;
+        const originalError = console.error;
+        
         console.log = function(...args) {
             originalLog.apply(console, args);
-            debugLog.push(args.join(' '));
+            debugLog.push(`[LOG] ${new Date().toLocaleTimeString()}: ${args.join(' ')}`);
+            updateDebugOutput();
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            debugLog.push(`[ERROR] ${new Date().toLocaleTimeString()}: ${args.join(' ')}`);
             updateDebugOutput();
         };
 
@@ -227,6 +301,48 @@ window.HelpdeskWidget = {
             const output = document.getElementById('consoleOutput');
             if (output && debugLog.length > 0) {
                 output.textContent = debugLog.slice(-3).join(' | ');
+            }
+        }
+
+        function updateWidgetStatus() {
+            const indicator = document.getElementById('statusIndicator');
+            const message = document.getElementById('statusMessage');
+            const widgetLoaded = document.getElementById('widgetLoaded');
+            const buttonFound = document.getElementById('buttonFound');
+            const apiAvailable = document.getElementById('apiAvailable');
+
+            // Check if widget is loaded
+            if (window.HelpdeskWidget) {
+                widgetLoaded.textContent = '✅ Yes';
+                widgetLoaded.style.color = '#28a745';
+                apiAvailable.textContent = '✅ Yes';
+                apiAvailable.style.color = '#28a745';
+                
+                // Check if button exists
+                const button = document.getElementById('helpdeskChatButton');
+                if (button) {
+                    buttonFound.textContent = '✅ Yes';
+                    buttonFound.style.color = '#28a745';
+                    
+                    indicator.className = 'status-indicator status-success';
+                    message.textContent = 'Widget loaded and ready!';
+                } else {
+                    buttonFound.textContent = '❌ No';
+                    buttonFound.style.color = '#dc3545';
+                    
+                    indicator.className = 'status-indicator status-error';
+                    message.textContent = 'Widget loaded but button not found';
+                }
+            } else {
+                widgetLoaded.textContent = '❌ No';
+                widgetLoaded.style.color = '#dc3545';
+                buttonFound.textContent = '❌ No';
+                buttonFound.style.color = '#dc3545';
+                apiAvailable.textContent = '❌ No';
+                apiAvailable.style.color = '#dc3545';
+                
+                indicator.className = 'status-indicator status-error';
+                message.textContent = 'Widget not loaded';
             }
         }
 
@@ -240,25 +356,85 @@ window.HelpdeskWidget = {
             }
         }
 
-        function checkWidgetElements() {
-            console.log('🔍 Checking widget elements...');
-            const button = document.getElementById('helpdeskChatButton');
-            const container = document.getElementById('helpdeskChatContainer');
-            const iframe = document.getElementById('helpdeskChatFrame');
-            
-            console.log('Button:', button ? '✅ Found' : '❌ Missing');
-            console.log('Container:', container ? '✅ Found' : '❌ Missing');
-            console.log('Iframe:', iframe ? '✅ Found' : '❌ Missing');
+        function testSendMessage() {
+            console.log('🧪 Testing send message...');
+            if (window.HelpdeskWidget && typeof window.HelpdeskWidget.sendMessage === 'function') {
+                if (!window.HelpdeskWidget.isOpen()) {
+                    window.HelpdeskWidget.open();
+                }
+                setTimeout(() => {
+                    const messageInput = document.getElementById('widgetMessageInput');
+                    if (messageInput) {
+                        messageInput.value = 'Hello! This is a test message from the debug panel.';
+                        window.HelpdeskWidget.sendMessage();
+                        console.log('✅ Test message sent');
+                    } else {
+                        console.error('❌ Message input not found');
+                    }
+                }, 500);
+            } else {
+                console.error('❌ Send message function not available');
+            }
         }
 
-        function reinitWidget() {
-            console.log('🔄 Reinitializing widget...');
-            if (window.HelpdeskWidget && typeof window.HelpdeskWidget.reinit === 'function') {
-                window.HelpdeskWidget.reinit();
-                console.log('✅ Widget reinitialized');
+        function testMaximize() {
+            console.log('🧪 Testing maximize...');
+            if (window.HelpdeskWidget && typeof window.HelpdeskWidget.maximize === 'function') {
+                if (!window.HelpdeskWidget.isOpen()) {
+                    window.HelpdeskWidget.open();
+                }
+                setTimeout(() => {
+                    window.HelpdeskWidget.maximize();
+                    console.log('✅ Maximize test completed');
+                }, 500);
             } else {
-                console.error('❌ Widget reinit not available');
+                console.error('❌ Maximize function not available');
             }
+        }
+
+        function checkWidgetElements() {
+            console.log('🔍 Checking widget elements...');
+            const container = document.getElementById('helpdeskWidgetContainer');
+            const button = document.getElementById('helpdeskChatButton');
+            const chatContainer = document.getElementById('helpdeskChatContainer');
+            const messagesArea = document.getElementById('widgetMessagesArea');
+            const messageInput = document.getElementById('widgetMessageInput');
+            
+            console.log('Container:', container ? '✅ Found' : '❌ Missing');
+            console.log('Button:', button ? '✅ Found' : '❌ Missing');
+            console.log('Chat Container:', chatContainer ? '✅ Found' : '❌ Missing');
+            console.log('Messages Area:', messagesArea ? '✅ Found' : '❌ Missing');
+            console.log('Message Input:', messageInput ? '✅ Found' : '❌ Missing');
+            
+            if (window.HelpdeskWidget) {
+                console.log('Widget API:', '✅ Available');
+                console.log('Is Open:', window.HelpdeskWidget.isOpen());
+                console.log('Is Maximized:', window.HelpdeskWidget.isMaximized());
+            } else {
+                console.log('Widget API:', '❌ Not Available');
+            }
+        }
+
+        function reloadWidget() {
+            console.log('🔄 Reloading widget...');
+            
+            // Remove existing widget
+            const existing = document.getElementById('helpdeskWidgetContainer');
+            if (existing) {
+                existing.remove();
+            }
+            
+            // Remove existing script
+            const existingScript = document.querySelector('script[src*="widget.js"]');
+            if (existingScript) {
+                existingScript.remove();
+            }
+            
+            // Clear widget from window
+            delete window.HelpdeskWidget;
+            
+            // Reload with new timestamp
+            loadWidget();
         }
 
         function clearConsole() {
@@ -267,40 +443,55 @@ window.HelpdeskWidget = {
             console.clear();
         }
 
-        // Update widget status
-        function updateWidgetStatus() {
-            const statusEl = document.getElementById('widgetStatus');
-            if (statusEl) {
-                if (window.HelpdeskWidget) {
-                    statusEl.textContent = '✅ Loaded';
-                    statusEl.style.color = '#28a745';
-                } else {
-                    statusEl.textContent = '❌ Not Loaded';
-                    statusEl.style.color = '#dc3545';
-                }
-            }
+        function loadWidget() {
+            const timestamp = Date.now();
+            const scriptUrl = `http://localhost:5000/static/widget.js?v=${timestamp}`;
+            
+            console.log('📦 Loading widget with timestamp:', timestamp);
+            
+            document.getElementById('scriptUrl').textContent = scriptUrl;
+            document.getElementById('loadInfo').textContent = `Loading script: widget.js?v=${timestamp}`;
+            
+            const script = document.createElement('script');
+            script.src = scriptUrl;
+            script.onload = () => {
+                console.log('✅ Widget script loaded successfully');
+                setTimeout(updateWidgetStatus, 1000);
+            };
+            script.onerror = (error) => {
+                console.error('❌ Widget script failed to load:', error);
+                const indicator = document.getElementById('statusIndicator');
+                const message = document.getElementById('statusMessage');
+                indicator.className = 'status-indicator status-error';
+                message.textContent = 'Failed to load widget script';
+            };
+            document.head.appendChild(script);
         }
 
-        // Check status periodically
-        setInterval(updateWidgetStatus, 1000);
+        // Update status periodically
+        setInterval(updateWidgetStatus, 2000);
+        
+        console.log('🚀 Demo page loaded');
     </script>
 
-    <!-- IT Helpdesk Widget Integration -->
+    <!-- Widget Configuration -->
     <script>
-      window.HelpdeskWidget = {
-        apiUrl: 'http://localhost:5000',
-        theme: 'dark',
-        position: 'bottom-right',
-        greeting: '👋 Hi! I\'m your IT Helpdesk Assistant. How can I help you today?',
-        allowUploads: true,
-        allowUrls: true,
-        maxFileSize: 10,
-        primaryColor: '#667eea',
-        secondaryColor: '#764ba2'
-      };
+        console.log('📋 Setting widget config...');
+        window.HelpdeskWidget = {
+            apiUrl: 'http://localhost:5000',
+            theme: 'dark',
+            position: 'bottom-right',
+            greeting: '👋 Hi! I\'m your IT Helpdesk Assistant. How can I help you today?',
+            allowUploads: true,
+            allowUrls: true,
+            maxFileSize: 10,
+            primaryColor: '#667eea',
+            secondaryColor: '#764ba2'
+        };
+        
+        // Load widget with cache-busting timestamp
+        loadWidget();
     </script>
-    <script src="http://localhost:5000/static/widget.js"></script>
-    <!-- End Widget -->
 
 </body>
 </html>
