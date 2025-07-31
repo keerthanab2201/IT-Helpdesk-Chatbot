@@ -60,6 +60,30 @@
             border-left: 4px solid #ffc107;
             margin: 15px 0;
         }
+
+        .debug-panel {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .debug-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .debug-button:hover {
+            background: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -111,6 +135,21 @@
                 <li>Upload PDF documents</li>
                 <li>Add URLs to expand knowledge</li>
             </ul>
+        </div>
+
+        <!-- Debug Panel -->
+        <div class="debug-panel">
+            <h4>🐛 Debug Panel</h4>
+            <div id="debugOutput">
+                <p><strong>Widget Status:</strong> <span id="widgetStatus">Initializing...</span></p>
+                <p><strong>Console:</strong> <span id="consoleOutput">Check browser console for detailed logs</span></p>
+            </div>
+            <div>
+                <button class="debug-button" onclick="testWidget()">Test Widget Toggle</button>
+                <button class="debug-button" onclick="checkWidgetElements()">Check Elements</button>
+                <button class="debug-button" onclick="reinitWidget()">Reinit Widget</button>
+                <button class="debug-button" onclick="clearConsole()">Clear Console</button>
+            </div>
         </div>
         
         <div class="content">
@@ -172,12 +211,86 @@ window.HelpdeskWidget = {
         </div>
     </div>
 
+    <!-- Debug Functions -->
+    <script>
+        let debugLog = [];
+
+        // Override console.log to capture debug messages
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            debugLog.push(args.join(' '));
+            updateDebugOutput();
+        };
+
+        function updateDebugOutput() {
+            const output = document.getElementById('consoleOutput');
+            if (output && debugLog.length > 0) {
+                output.textContent = debugLog.slice(-3).join(' | ');
+            }
+        }
+
+        function testWidget() {
+            console.log('🧪 Testing widget...');
+            if (window.HelpdeskWidget && typeof window.HelpdeskWidget.toggle === 'function') {
+                window.HelpdeskWidget.toggle();
+                console.log('✅ Widget toggle successful');
+            } else {
+                console.error('❌ Widget not available');
+            }
+        }
+
+        function checkWidgetElements() {
+            console.log('🔍 Checking widget elements...');
+            const button = document.getElementById('helpdeskChatButton');
+            const container = document.getElementById('helpdeskChatContainer');
+            const iframe = document.getElementById('helpdeskChatFrame');
+            
+            console.log('Button:', button ? '✅ Found' : '❌ Missing');
+            console.log('Container:', container ? '✅ Found' : '❌ Missing');
+            console.log('Iframe:', iframe ? '✅ Found' : '❌ Missing');
+        }
+
+        function reinitWidget() {
+            console.log('🔄 Reinitializing widget...');
+            if (window.HelpdeskWidget && typeof window.HelpdeskWidget.reinit === 'function') {
+                window.HelpdeskWidget.reinit();
+                console.log('✅ Widget reinitialized');
+            } else {
+                console.error('❌ Widget reinit not available');
+            }
+        }
+
+        function clearConsole() {
+            debugLog = [];
+            updateDebugOutput();
+            console.clear();
+        }
+
+        // Update widget status
+        function updateWidgetStatus() {
+            const statusEl = document.getElementById('widgetStatus');
+            if (statusEl) {
+                if (window.HelpdeskWidget) {
+                    statusEl.textContent = '✅ Loaded';
+                    statusEl.style.color = '#28a745';
+                } else {
+                    statusEl.textContent = '❌ Not Loaded';
+                    statusEl.style.color = '#dc3545';
+                }
+            }
+        }
+
+        // Check status periodically
+        setInterval(updateWidgetStatus, 1000);
+    </script>
+
     <!-- IT Helpdesk Widget Integration -->
     <script>
       window.HelpdeskWidget = {
-        apiUrl: 'http://localhost:5000',  // Your Flask app URL
-        theme: 'dark',                    // 'light' or 'dark'
-        position: 'bottom-right',         // 'bottom-right' or 'bottom-left'
+        apiUrl: 'http://localhost:5000',
+        theme: 'dark',
+        position: 'bottom-right',
         greeting: '👋 Hi! I\'m your IT Helpdesk Assistant. How can I help you today?',
         allowUploads: true,
         allowUrls: true,
@@ -188,3 +301,6 @@ window.HelpdeskWidget = {
     </script>
     <script src="http://localhost:5000/static/widget.js"></script>
     <!-- End Widget -->
+
+</body>
+</html>
