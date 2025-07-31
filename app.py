@@ -1,6 +1,6 @@
 # Enhanced app.py with user upload features
 
-from flask import Flask, render_template, request, redirect, url_for, g, flash, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, g, flash, jsonify
 from dotenv import load_dotenv
 import os
 import requests
@@ -17,8 +17,6 @@ import urllib.request
 import urllib.parse
 import secrets
 import json
-import time
-from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -150,39 +148,16 @@ try:
 except Exception as e:
     print(f"Error initializing Pinecone: {e}")
 
-# Home route - Demo website with widget embedding interface
-# Update your demo route to include version parameter
+# Home route - Enhanced chat interface
 @app.route("/")
 def home():
-    # Add version parameter for cache busting
-    version = str(int(time.time()))
-    return render_template("demo.html", widget_version=version)
+    return render_template("enhanced_chat.html")
 
-@app.route("/debug")
-def debug():
-    return render_template("debug.html")
+# Widget route
+@app.route("/widget")
+def widget():
+    return render_template("chat_widget.html")
 
-@app.route("/chat")
-def chat():
-    # Check if it's being loaded as a widget
-    is_widget = request.args.get('widget') == 'true'
-    return render_template("enhanced_chat.html", is_widget=is_widget)
-
-# Add this route to serve the widget JavaScript
-@app.route("/static/widget.js")
-def serve_widget_with_cache_bust():
-    """Serve widget.js with cache busting headers"""
-    response = send_from_directory('static', 'widget.js', mimetype='application/javascript')
-
-# Add cache-busting headers
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
-# Add timestamp to ensure freshness
-    response.headers['Last-Modified'] = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
-    
-    return response
-  
 # Admin Panel
 @app.route("/admin")
 def admin():
@@ -336,7 +311,7 @@ If users mention uploading documents or adding URLs, remind them they can use th
 Use this context if relevant to the user's question:
 {context}
 
-Be concise but thorough. Use markdown formatting for better readability."""
+Be concise and polite but thorough. Use markdown formatting for better readability."""
 
         payload = {
             "model": "qwen/qwen-2.5-72b-instruct",
@@ -696,10 +671,6 @@ def admin_add_url():
         print("Error processing URL:", e)
         return redirect(url_for("admin"))
 
-@app.route("/demo")
-def demo():
-    return render_template("demo.html")
-
 # Additional API endpoints for the enhanced features
 @app.route("/api/add-api-key", methods=["POST"])
 def add_api_key():
@@ -800,14 +771,6 @@ def end_session():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-# Add CORS headers
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    return response
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
